@@ -1,0 +1,45 @@
+{
+  "name": "nodejs-building-blocks",
+  "version": "1.0.0",
+  "description": "some building blocks for building business oriented systems using nodejs",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "(rm -r dist 2> /dev/null) || true && npx tsc -p tsconfig.build.json",
+    "lint": "npx eslint . --ext .ts",
+    "test:lib:cache": "node --test --import tsx src/lib/cache/tests/*.test.ts",
+    "test:lib:scheduler": "node --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
+    "test:lib:primitives": "node --test --import tsx src/lib/primitives/**/**/*.test.ts",
+    "test": "npm run test:lib:cache && npm run test:lib:primitives && npm run test:lib:scheduler"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yasser-Belatreche/nodejs-building-blocks.git"
+  },
+  "keywords": [
+    "nodejs",
+    "typescript"
+  ],
+  "author": "Yasser Belatreche",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yasser-Belatreche/nodejs-building-blocks/issues"
+  },
+  "homepage": "https://github.com/Yasser-Belatreche/nodejs-building-blocks#readme",
+  "engines": {
+    "node": "20.11.0",
+    "npm": "10.2.4"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.0",
+    "@types/node": "^20.11.16",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
