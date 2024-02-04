@@ -13,7 +13,9 @@ await describe('Questions and Answers', async () => {
 
     await it('should be able to register an answer for a question and get that answer when asking the same question', async () => {
         class TestAnswer implements Answer<'Tests.First'> {
-            question: 'Tests.First' = 'Tests.First';
+            question(): 'Tests.First' {
+                return 'Tests.First';
+            }
 
             async answer(params: { trackingId: string }): Promise<number> {
                 return 42;
@@ -33,7 +35,9 @@ await describe('Questions and Answers', async () => {
 
     await it('should not be able to register multiple answers to the same question', async () => {
         class TestAnswer implements Answer<'Tests.First'> {
-            question: 'Tests.First' = 'Tests.First';
+            question(): 'Tests.First' {
+                return 'Tests.First';
+            }
 
             async answer(params: { trackingId: string }): Promise<number> {
                 return 42;
@@ -41,7 +45,9 @@ await describe('Questions and Answers', async () => {
         }
 
         class TestAnswer2 implements Answer<'Tests.First'> {
-            question: 'Tests.First' = 'Tests.First';
+            question(): 'Tests.First' {
+                return 'Tests.First';
+            }
 
             async answer(params: { trackingId: string }): Promise<number> {
                 return 42;
@@ -81,7 +87,9 @@ await describe('Questions and Answers', async () => {
 
     await it('should be able to register multiple answers to different questions', async () => {
         class TestAnswer1 implements Answer<'Tests.First'> {
-            question: 'Tests.First' = 'Tests.First';
+            question(): 'Tests.First' {
+                return 'Tests.First';
+            }
 
             async answer(params: { trackingId: string }): Promise<number> {
                 return 32;
@@ -89,7 +97,9 @@ await describe('Questions and Answers', async () => {
         }
 
         class TestAnswer2 implements Answer<'Tests.Second'> {
-            question: 'Tests.Second' = 'Tests.Second';
+            question(): 'Tests.Second' {
+                return 'Tests.Second';
+            }
 
             async answer(params: { something: string }): Promise<boolean> {
                 return true;

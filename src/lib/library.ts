@@ -17,6 +17,7 @@ const Library = {
     async Init(): Promise<void> {
         await LoggerFactory.Setup(this.aJobsScheduler());
         await PersistenceFactory.Setup(this.aJobsScheduler());
+        await MessagesBrokerFactory.Setup(this.aJobsScheduler());
     },
 
     async Destroy() {
