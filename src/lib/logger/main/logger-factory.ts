@@ -6,7 +6,7 @@ import { Logger } from './logger';
 import { FsLogger } from './fs-logger';
 import { LoggerInitializer } from './logger-initializer';
 
-const filePath = path.join(__dirname, '../../../../logs/app.log');
+const filePath = path.join(__dirname, '../../../../outputs/logs/app.log');
 const logger = FsLogger.Instance({ filePath, withMemCache: false });
 
 const LoggerFactory = {
