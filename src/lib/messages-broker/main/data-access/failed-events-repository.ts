@@ -4,6 +4,7 @@ export interface FailedEvent {
     readonly id: string;
 
     readonly event: Event<any>;
+    readonly eventOccuredAt: Date;
     readonly handlerId: string;
     readonly handlerMaxRetries: number;
     readonly sessionCorrelationId: string;

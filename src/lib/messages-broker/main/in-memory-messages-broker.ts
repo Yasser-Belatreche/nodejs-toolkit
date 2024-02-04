@@ -39,6 +39,7 @@ class InMemoryMessagesBroker implements MessagesBroker {
                 await this.failedEventsRepository.save({
                     id: crypto.randomUUID(),
                     event,
+                    eventOccuredAt: event.occurredAt,
                     handlerId: handler.id(),
                     handlerMaxRetries: handler.config?.().retries ?? 0,
                     sessionCorrelationId: session.correlationId,
@@ -62,6 +63,7 @@ class InMemoryMessagesBroker implements MessagesBroker {
                 await this.failedEventsRepository.save({
                     id: crypto.randomUUID(),
                     event,
+                    eventOccuredAt: event.occurredAt,
                     handlerId: handler.id(),
                     handlerMaxRetries: handler.config?.().retries ?? 0,
                     sessionCorrelationId: session.correlationId,

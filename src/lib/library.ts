@@ -24,7 +24,7 @@ const Library = {
         await PersistenceFactory.Destroy();
     },
 
-    aMongoPersistence(): Persistence {
+    aPersistence(): Persistence {
         return PersistenceFactory.anInstance();
     },
 

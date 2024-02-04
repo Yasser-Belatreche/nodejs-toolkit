@@ -3,7 +3,7 @@ import { SessionCorrelationId } from '@lib/primitives/application-specific/sessi
 
 import { MessagesBroker } from '../messages-broker';
 
-class RetryFailedEventsJob implements ScheduledJob {
+class RetryFailedEventsScheduledJob implements ScheduledJob {
     constructor(private readonly broker: MessagesBroker) {}
 
     async run(session: SessionCorrelationId): Promise<void> {
@@ -18,4 +18,4 @@ class RetryFailedEventsJob implements ScheduledJob {
     }
 }
 
-export { RetryFailedEventsJob };
+export { RetryFailedEventsScheduledJob };

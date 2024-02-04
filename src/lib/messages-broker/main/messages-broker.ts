@@ -1,6 +1,7 @@
 import * as crypto from 'crypto';
 
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
+import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
 export interface MessagesBroker {
     publish<T extends Event<any>>(event: T, session: SessionCorrelationId): Promise<void>;
@@ -59,7 +60,10 @@ export abstract class EventHandler<E extends Event<any>> {
 
 export abstract class UniversalEventHandler extends EventHandler<Event<any>> {
     eventName(): string {
-        return '';
+        throw new DeveloperException(
+            'WRONG_METHOD_CALL',
+            'UniversalEventHandler should not have an event name',
+        );
     }
 }
 
