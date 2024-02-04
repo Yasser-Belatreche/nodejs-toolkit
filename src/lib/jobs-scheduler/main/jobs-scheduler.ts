@@ -1,5 +1,5 @@
 import { Day } from '@lib/primitives/generic/types/day';
-import { WithSessionCorrelationId } from '../../primitives/application-specific/session';
+import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 
 export interface JobsScheduler {
     register(job: ScheduledJob): void;
@@ -8,9 +8,11 @@ export interface JobsScheduler {
 }
 
 export interface ScheduledJob {
-    run(session: WithSessionCorrelationId): Promise<void>;
+    run(session: SessionCorrelationId): Promise<void>;
 
     rhythm(): Rhythm;
+
+    config?(): { readonly retry: number };
 }
 
 export type Rhythm = FirstExecutionTime & Frequency;

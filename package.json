@@ -9,8 +9,9 @@
     "lint": "npx eslint . --ext .ts",
     "test:lib:cache": "node --test --import tsx src/lib/cache/tests/*.test.ts",
     "test:lib:scheduler": "node --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
+    "test:lib:broker": "node --test --import tsx src/lib/messages-broker/tests/*.test.ts",
     "test:lib:primitives": "node --test --import tsx src/lib/primitives/**/**/*.test.ts",
-    "test": "npm run test:lib:cache && npm run test:lib:primitives && npm run test:lib:scheduler"
+    "test": "npm run test:lib:cache && npm run test:lib:primitives && npm run test:lib:scheduler && npm run test:lib:broker"
   },
   "repository": {
     "type": "git",

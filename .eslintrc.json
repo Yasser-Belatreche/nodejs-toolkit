@@ -15,6 +15,7 @@
     "rules": {
         "prettier/prettier": ["error"],
         "@typescript-eslint/no-non-null-assertion": ["off"],
+        "@typescript-eslint/no-unsafe-argument": ["off"],
         "@typescript-eslint/method-signature-style": ["off"],
         "@typescript-eslint/consistent-type-imports": ["off"],
         "@typescript-eslint/strict-boolean-expressions": ["off"],

@@ -1,21 +1,10 @@
 import { Person } from './person';
 
-export interface WithSession {
-    session: Session;
-}
-
-export interface WithSessionCorrelationId {
-    session: SessionCorrelationId;
-}
-
 export interface SessionCorrelationId extends Pick<Session, 'correlationId'> {}
-
-export interface WithOptionalSession {
-    session?: Session;
-}
 
 export interface Session {
     correlationId: string;
+
     user: {
         id: string;
         role: string;

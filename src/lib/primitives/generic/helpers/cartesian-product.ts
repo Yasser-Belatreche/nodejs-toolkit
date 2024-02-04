@@ -29,7 +29,7 @@ const cleanupRecord = <T extends Record<string, any>>(record: T): Record<string,
     const result: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(record)) {
-        if (![null, undefined].includes(value)) result[key] = value;
+        if (value !== null && value !== undefined) result[key] = value;
     }
 
     return result;

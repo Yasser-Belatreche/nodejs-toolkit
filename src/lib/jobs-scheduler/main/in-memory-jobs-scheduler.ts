@@ -32,10 +32,24 @@ class InMemoryJobsScheduler implements JobsScheduler {
         const timeout = setTimeout((): void => {
             const runner = (): void => {
                 const correlationId = crypto.randomUUID();
+                const retry = job.config?.().retry ?? 2;
 
-                job.run({ session: { correlationId } })
-                    .catch(async () => await job.run({ session: { correlationId } }))
-                    .catch(async () => await job.run({ session: { correlationId } }))
+                job.run({ correlationId })
+                    .catch(async () => {
+                        if (retry === 0) return;
+
+                        let failures = 1;
+
+                        while (failures <= retry) {
+                            try {
+                                await job.run({ correlationId });
+
+                                break;
+                            } catch (error) {
+                                failures++;
+                            }
+                        }
+                    })
                     .catch(e => {});
             };
 
