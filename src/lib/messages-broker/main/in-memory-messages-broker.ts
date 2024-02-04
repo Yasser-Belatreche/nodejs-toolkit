@@ -102,6 +102,17 @@ class InMemoryMessagesBroker implements MessagesBroker {
     }
 
     registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): void {
+        const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
+        const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
+            h.find(eh => eh.idEquals(handler.id())),
+        );
+
+        if (foundInUniversal || foundInEventHandlers)
+            throw new DeveloperException(
+                'EVENT_HANDLER_ALREADY_REGISTERED',
+                `There is already a handler registered with the id: ${handler.id()}`,
+            );
+
         if (!this.eventHandlers.has(handler.eventName())) {
             this.eventHandlers.set(handler.eventName(), []);
         }
@@ -110,6 +121,17 @@ class InMemoryMessagesBroker implements MessagesBroker {
     }
 
     registerUniversalEventHandler(handler: UniversalEventHandler): void {
+        const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
+        const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
+            h.find(eh => eh.idEquals(handler.id())),
+        );
+
+        if (foundInUniversal || foundInEventHandlers)
+            throw new DeveloperException(
+                'EVENT_HANDLER_ALREADY_REGISTERED',
+                `There is already a handler registered with the id: ${handler.id()}`,
+            );
+
         this.universalEventHandlers.push(handler);
     }
 
@@ -143,6 +165,7 @@ class InMemoryMessagesBroker implements MessagesBroker {
     clear(): void {
         this.eventHandlers.clear();
         this.answers.clear();
+        this.universalEventHandlers.length = 0;
     }
 }
 
