@@ -18,5 +18,5 @@ export interface FailedEvent {
 export interface FailedEventsRepository {
     save(data: FailedEvent): Promise<void>;
 
-    findUnsuccessfullEventsWithRetriesLessThanMax(): Promise<FailedEvent[]>;
+    findAllUnsuccessfullWithRetriesLessThanMax(): Promise<FailedEvent[]>;
 }

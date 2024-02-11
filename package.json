@@ -7,6 +7,7 @@
   "scripts": {
     "build": "(rm -r dist 2> /dev/null) || true && npx tsc -p tsconfig.build.json",
     "lint": "npx eslint . --ext .ts",
+    "test:webhooks": "node --test --import tsx src/components/webhooks-management/tests/*.test.ts",
     "test:lib:cache": "node --test --import tsx src/lib/cache/tests/*.test.ts",
     "test:lib:scheduler": "node --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
     "test:lib:broker": "node --test --import tsx src/lib/messages-broker/tests/*.test.ts",
@@ -44,6 +45,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "mongoose": "^8.1.1"
+    "mongoose": "^8.1.1",
+    "ulid": "^2.3.0"
   }
 }

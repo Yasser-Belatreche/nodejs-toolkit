@@ -7,7 +7,7 @@ class InMemoryFailedEventsRepository implements FailedEventsRepository {
         this.map.set(data.id, data);
     }
 
-    async findUnsuccessfullEventsWithRetriesLessThanMax(): Promise<FailedEvent[]> {
+    async findAllUnsuccessfullWithRetriesLessThanMax(): Promise<FailedEvent[]> {
         return Array.from(this.map.values()).filter(
             failed => !failed.processedSuccessfully && failed.retries < failed.handlerMaxRetries,
         );

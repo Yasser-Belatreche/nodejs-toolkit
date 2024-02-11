@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 
+import { PrimitivesRecord } from '@lib/primitives/generic/types/primitives-record';
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
@@ -23,16 +24,37 @@ export interface MessagesBroker {
     clear(): void;
 }
 
-export abstract class Event<T> {
+export abstract class Event<T extends Record<string, any>> {
     abstract readonly name: string;
     abstract readonly payload: T;
 
     readonly eventId: string;
     readonly occurredAt: Date;
 
+    static From(state: Event<any>['state']): Event<any> {
+        const event = new (Event as any)(state.eventId, state.occurredAt);
+
+        event.eventId = state.eventId;
+        event.occurredAt = state.occurredAt;
+        event.payload = state.payload;
+        event.name = state.name;
+
+        return event;
+    }
+
     protected constructor(eventId?: string, occurredAt?: Date) {
         this.occurredAt = occurredAt ?? new Date();
         this.eventId = eventId ?? crypto.randomBytes(16).toString('hex');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    get state() {
+        return {
+            eventId: this.eventId,
+            occurredAt: this.occurredAt,
+            name: this.name,
+            payload: { ...this.payload },
+        } satisfies PrimitivesRecord;
     }
 }
 

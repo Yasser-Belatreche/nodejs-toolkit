@@ -1,14 +1,5 @@
+import { PaginatedQuery } from './base-query';
 import { BaseValidationException } from './exceptions/base-validation-exception';
-
-export interface PaginatedQuery {
-    page?: number;
-    perPage?: number;
-}
-
-export interface PaginatedQueryResponse<Entity> {
-    pagination: Pagination;
-    list: Entity[];
-}
 
 export interface Pagination {
     page: number;

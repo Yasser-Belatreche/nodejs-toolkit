@@ -78,8 +78,7 @@ class InMemoryMessagesBroker implements MessagesBroker {
     }
 
     async retryFailedEvents(): Promise<void> {
-        const list =
-            await this.failedEventsRepository.findUnsuccessfullEventsWithRetriesLessThanMax();
+        const list = await this.failedEventsRepository.findAllUnsuccessfullWithRetriesLessThanMax();
 
         for (const failed of list) {
             const handler = this.eventHandlers
