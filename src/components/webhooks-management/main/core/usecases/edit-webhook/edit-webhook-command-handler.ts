@@ -16,7 +16,7 @@ class EditWebhookCommandHandler
         const webhook = await this.repository.ofId(command.id);
 
         if (!webhook)
-            throw new NotFoundException(`Webhook with id ${command.id} not found`, {
+            throw new NotFoundException('WEBHOOK', `Webhook with id ${command.id} not found`, {
                 id: command.id,
             });
 

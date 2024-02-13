@@ -2,9 +2,12 @@ import { BaseNotFoundException } from '@lib/primitives/application-specific/exce
 import { BuildExceptionCode } from './build-exception-code';
 
 class NotFoundException extends BaseNotFoundException {
-    constructor(msg: string, payload?: Record<string, any>) {
+    constructor(entity: 'WEBHOOK' | 'OUTBOX_EVENT', msg: string, payload?: Record<string, any>) {
         super({
-            code: BuildExceptionCode('NOT_FOUND'),
+            code:
+                entity === 'WEBHOOK'
+                    ? BuildExceptionCode('NOT_FOUND')
+                    : BuildExceptionCode(`${entity}.NOT_FOUND` as Uppercase<string>),
             message: msg,
             payload,
         });

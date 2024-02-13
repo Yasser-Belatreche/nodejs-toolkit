@@ -8,4 +8,6 @@ export interface WebhookRepository {
     delete(webhook: Webhook): Promise<void>;
 
     ofId(id: string): Promise<Webhook | null>;
+
+    ofEvent(event: string): Promise<Webhook[]>;
 }

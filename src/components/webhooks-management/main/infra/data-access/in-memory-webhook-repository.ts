@@ -1,3 +1,4 @@
+import { EventName } from '../../core/domain/event-name';
 import { Webhook } from '../../core/domain/webhook';
 import { WebhookRepository } from '../../core/domain/webhook-repository';
 
@@ -22,6 +23,10 @@ class InMemoryWebhookRepository implements WebhookRepository {
         if (!webhook) return null;
 
         return webhook;
+    }
+
+    async ofEvent(event: EventName): Promise<Webhook[]> {
+        return Array.from(this.map.values()).filter(webhook => webhook.events.includes(event));
     }
 }
 

@@ -1,4 +1,6 @@
+import { RestClient } from './core/domain/rest-client';
 import { WebhookRepository } from './core/domain/webhook-repository';
+import { OutboxEventRepository } from './core/domain/outbox-event-repository';
 
 import { CreateWebhookCommand } from './core/usecases/create-webhook/create-webhook-command';
 import { CreateWebhookCommandHandler } from './core/usecases/create-webhook/create-webhook-command-handler';
@@ -28,8 +30,26 @@ import { GetWebhookQuery } from './core/usecases/get-webhook/get-webhook-query';
 import { GetWebhookQueryHandler } from './core/usecases/get-webhook/get-webhook-query-handler';
 import { GetWebhookQueryResponse } from './core/usecases/get-webhook/get-webhook-query-response';
 
+import { TestWebhookCommand } from './core/usecases/test-webhook/test-webhook-command';
+import { TestWebhookCommandHandler } from './core/usecases/test-webhook/test-webhook-command-handler';
+import { TestWebhookCommandResponse } from './core/usecases/test-webhook/test-webhook-command-response';
+
+import { GetWebhooksQuery } from './core/usecases/get-webhooks/get-webhooks-query';
+import { GetWebhooksQueryResponse } from './core/usecases/get-webhooks/get-webhooks-query-response';
+import { GetWebhooksQueryHandler } from './core/usecases/get-webhooks/get-webhooks-query-handler';
+import { GetOutboxEventQuery } from './core/usecases/get-outbox-event/get-outbox-event-query';
+import { GetOutboxEventQueryResponse } from './core/usecases/get-outbox-event/get-outbox-event-query-response';
+import { GetOutboxEventQueryHandler } from './core/usecases/get-outbox-event/get-outbox-event-query-handler';
+import { GetOutboxEventsQuery } from './core/usecases/get-outbox-events/get-outbox-events-query';
+import { GetOutboxEventsQueryResponse } from './core/usecases/get-outbox-events/get-outbox-events-query-response';
+import { GetOutboxEventsQueryHandler } from './core/usecases/get-outbox-events/get-outbox-events-query-handler';
+
 class WebhooksManagerFacade {
-    constructor(private readonly webhookRepository: WebhookRepository) {}
+    constructor(
+        private readonly restClient: RestClient,
+        private readonly webhookRepository: WebhookRepository,
+        private readonly outboxEventRepository: OutboxEventRepository,
+    ) {}
 
     async createWebhook(command: CreateWebhookCommand): Promise<CreateWebhookCommandResponse> {
         return await new CreateWebhookCommandHandler(this.webhookRepository).execute(command);
@@ -51,12 +71,32 @@ class WebhooksManagerFacade {
         return await new DisableWebhookCommandHandler(this.webhookRepository).execute(command);
     }
 
-    async getEvents(query: GetEventsQuery): Promise<GetEventsQueryResponse> {
-        return await new GetEventsQueryHandler().handle(query);
+    async testWebhook(command: TestWebhookCommand): Promise<TestWebhookCommandResponse> {
+        return await new TestWebhookCommandHandler(
+            this.restClient,
+            this.webhookRepository,
+            this.outboxEventRepository,
+        ).execute(command);
     }
 
     async getWebhook(query: GetWebhookQuery): Promise<GetWebhookQueryResponse> {
         return await new GetWebhookQueryHandler(this.webhookRepository).handle(query);
+    }
+
+    async getWebhooks(query: GetWebhooksQuery): Promise<GetWebhooksQueryResponse> {
+        return await new GetWebhooksQueryHandler().handle(query);
+    }
+
+    async getEvents(query: GetEventsQuery): Promise<GetEventsQueryResponse> {
+        return await new GetEventsQueryHandler().handle(query);
+    }
+
+    async getOutboxEvent(query: GetOutboxEventQuery): Promise<GetOutboxEventQueryResponse> {
+        return await new GetOutboxEventQueryHandler(this.outboxEventRepository).handle(query);
+    }
+
+    async getOutboxEvents(query: GetOutboxEventsQuery): Promise<GetOutboxEventsQueryResponse> {
+        return await new GetOutboxEventsQueryHandler().handle(query);
     }
 }
 

@@ -12,7 +12,7 @@
     "test:lib:scheduler": "node --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
     "test:lib:broker": "node --test --import tsx src/lib/messages-broker/tests/*.test.ts",
     "test:lib:primitives": "node --test --import tsx src/lib/primitives/**/**/*.test.ts",
-    "test": "npm run test:lib:cache && npm run test:lib:primitives && npm run test:lib:scheduler && npm run test:lib:broker"
+    "test": "node ---test --import tsx"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,6 @@
     "npm": "10.2.4"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.0",
     "@types/node": "^20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
@@ -45,6 +44,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.0",
     "mongoose": "^8.1.1",
     "ulid": "^2.3.0"
   }

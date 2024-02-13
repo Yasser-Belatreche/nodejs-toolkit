@@ -12,7 +12,9 @@ class GetWebhookQueryHandler implements QueryHandler<GetWebhookQuery, GetWebhook
         const webhook = await this.repository.ofId(query.id);
 
         if (!webhook)
-            throw new NotFoundException(`Webhook with id ${query.id} not found`, { id: query.id });
+            throw new NotFoundException('WEBHOOK', `Webhook with id ${query.id} not found`, {
+                id: query.id,
+            });
 
         return webhook;
     }

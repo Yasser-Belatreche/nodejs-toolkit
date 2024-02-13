@@ -8,7 +8,7 @@ class GetEventsQueryHandler implements QueryHandler<GetEventsQuery, GetEventsQue
     async handle(query: GetEventsQuery): Promise<GetEventsQueryResponse> {
         const result: GetEventsQueryResponse = {
             names: [],
-            docs: [],
+            docs: {},
         };
 
         for (const name of Object.keys(SupportedEvents)) {
@@ -17,7 +17,7 @@ class GetEventsQueryHandler implements QueryHandler<GetEventsQuery, GetEventsQue
             }
 
             result.names.push(name);
-            result.docs.push(SupportedEvents[name]);
+            result.docs[name] = SupportedEvents[name];
         }
 
         return result;

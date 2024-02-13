@@ -1,6 +1,6 @@
 import { PersistenceFactory } from './persistence-factory';
 
-function Transaction(): (
+function Transactional(): (
     target: any,
     methodName: string,
     descriptor: PropertyDescriptor,
@@ -18,4 +18,4 @@ function Transaction(): (
     };
 }
 
-export { Transaction };
+export { Transactional };
