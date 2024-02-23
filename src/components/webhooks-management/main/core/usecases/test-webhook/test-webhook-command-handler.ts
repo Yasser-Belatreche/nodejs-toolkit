@@ -2,7 +2,7 @@ import { CommandHandler } from '@lib/primitives/generic/cqrs/command-handler';
 import { TestWebhookCommand } from './test-webhook-command';
 import { TestWebhookCommandResponse } from './test-webhook-command-response';
 
-import { SendWebhookEvent } from '../../domain/send-webhook-event';
+import { SendEventToWebhook } from '../../domain/send-webhook-event';
 import { GenerateTestEvent, SupportedEvents } from '../../domain/supported-events';
 
 import { NotFoundException } from '../../domain/exceptions/not-found-exception';
@@ -35,7 +35,7 @@ class TestWebhookCommandHandler
 
             testEvent.name = eventName;
 
-            const outboxEvent = await SendWebhookEvent(
+            const outboxEvent = await SendEventToWebhook(
                 webhook,
                 testEvent,
                 true,

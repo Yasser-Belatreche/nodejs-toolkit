@@ -2,6 +2,7 @@ import { GenerateUuid } from '@lib/primitives/generic/helpers/generate-uuid';
 
 import { Event } from './event';
 import { Webhook } from './webhook';
+import { ValidationException } from './exceptions/validation-exception';
 
 export interface OutboxEvent {
     id: string;
@@ -28,6 +29,13 @@ export interface OutboxEvent {
 }
 
 const CreateOutboxEvent = (webhook: Webhook, event: Event, isTest: boolean): OutboxEvent => {
+    if (!webhook.events.find(e => e === event.name))
+        throw new ValidationException(
+            'WEBHOOK_EVENT_NOT_SUPPORTED',
+            `Webhook with id ${webhook.id} does not support event ${event.name}`,
+            { webhookId: webhook.id, eventName: event.name },
+        );
+
     return {
         id: GenerateUuid(),
         webhookId: webhook.id,

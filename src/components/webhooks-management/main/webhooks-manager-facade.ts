@@ -37,10 +37,12 @@ import { TestWebhookCommandResponse } from './core/usecases/test-webhook/test-we
 import { GetWebhooksQuery } from './core/usecases/get-webhooks/get-webhooks-query';
 import { GetWebhooksQueryResponse } from './core/usecases/get-webhooks/get-webhooks-query-response';
 import { GetWebhooksQueryHandler } from './core/usecases/get-webhooks/get-webhooks-query-handler';
-import { GetOutboxEventQuery } from './core/usecases/get-outbox-event/get-outbox-event-query';
+
 import { GetOutboxEventQueryResponse } from './core/usecases/get-outbox-event/get-outbox-event-query-response';
 import { GetOutboxEventQueryHandler } from './core/usecases/get-outbox-event/get-outbox-event-query-handler';
 import { GetOutboxEventsQuery } from './core/usecases/get-outbox-events/get-outbox-events-query';
+
+import { GetOutboxEventQuery } from './core/usecases/get-outbox-event/get-outbox-event-query';
 import { GetOutboxEventsQueryResponse } from './core/usecases/get-outbox-events/get-outbox-events-query-response';
 import { GetOutboxEventsQueryHandler } from './core/usecases/get-outbox-events/get-outbox-events-query-handler';
 

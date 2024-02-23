@@ -8,6 +8,10 @@ class InMemoryOutboxEventRepository implements OutboxEventRepository {
         this.map.set(outboxEvent.id, outboxEvent);
     }
 
+    async createBatch(outboxEvents: OutboxEvent[]): Promise<void> {
+        outboxEvents.forEach(event => this.map.set(event.id, event));
+    }
+
     async update(outboxEvent: OutboxEvent): Promise<void> {
         this.map.set(outboxEvent.id, outboxEvent);
     }

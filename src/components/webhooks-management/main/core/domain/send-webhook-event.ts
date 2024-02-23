@@ -12,7 +12,7 @@ import { Webhook } from './webhook';
 import { RestClient } from './rest-client';
 import { OutboxEventRepository } from './outbox-event-repository';
 
-const SendWebhookEvent = async (
+const SendEventToWebhook = async (
     webhook: Webhook,
     event: Event,
     isTest: boolean,
@@ -47,6 +47,70 @@ const SendWebhookEvent = async (
     }
 
     return result;
+};
+
+const SendEventToWebhooks = async (
+    webhooks: Webhook[],
+    event: Event,
+    isTest: boolean,
+    restClient: RestClient,
+    repository: OutboxEventRepository,
+): Promise<OutboxEvent[]> => {
+    const outboxEvents = await CreateBatchOutboxEvents(webhooks, event, isTest, repository);
+
+    return await SendBatchOutboxEvents(outboxEvents, restClient, repository);
+};
+
+const CreateBatchOutboxEvents = async (
+    webhooks: Webhook[],
+    event: Event,
+    isTest: boolean,
+    repository: OutboxEventRepository,
+): Promise<OutboxEvent[]> => {
+    const outboxEvents: OutboxEvent[] = [];
+
+    for (const webhook of webhooks) {
+        outboxEvents.push(CreateOutboxEvent(webhook, event, isTest));
+    }
+
+    await repository.createBatch(outboxEvents);
+
+    return outboxEvents;
+};
+
+const SendBatchOutboxEvents = async (
+    outboxEvents: OutboxEvent[],
+    restClient: RestClient,
+    repository: OutboxEventRepository,
+): Promise<OutboxEvent[]> => {
+    const results: OutboxEvent[] = [];
+
+    for (const outbox of outboxEvents) {
+        let result: OutboxEvent;
+
+        const event = outbox.event;
+
+        const { response, status } = await restClient.post(outbox.deliveryUrl, event, {
+            'X-Webhook-Id': outbox.webhookId,
+            'X-Webhook-Signature': GenerateSignature(outbox.webhookSecret, event),
+            'X-Webhook-Trigger': event.name,
+            'Content-Type': 'application/json',
+        });
+
+        if (status === 200 || status === 201) {
+            result = OutboxEventDelivered(outbox, status, response);
+
+            await repository.update(result);
+        } else {
+            result = OutboxEventDeliveryFailed(outbox, status, response);
+
+            await repository.update(result);
+        }
+
+        results.push(result);
+    }
+
+    return results;
 };
 
 const RetryOutboxEvent = async (
@@ -85,4 +149,4 @@ const RetryOutboxEvent = async (
     }
 };
 
-export { SendWebhookEvent, RetryOutboxEvent };
+export { SendEventToWebhook, RetryOutboxEvent, SendEventToWebhooks };
