@@ -11,6 +11,7 @@ class Email extends ValueObject<string> {
             throw new BaseValidationException({
                 code: 'EMAILS.INVALID_EMAIL',
                 message: `${email} is not a valid email`,
+                payload: { email },
             });
 
         return new Email(email);

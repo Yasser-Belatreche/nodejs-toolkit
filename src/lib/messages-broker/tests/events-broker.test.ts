@@ -1,18 +1,36 @@
 import assert from 'node:assert';
 import { describe, it, beforeEach, mock } from 'node:test';
 
-import { Event, EventHandler, UniversalEventHandler } from '../main/messages-broker';
-import { MessagesBrokerFactory } from '../main/messages-broker-factory';
+import {
+    Event,
+    EventHandler,
+    EventsBroker,
+    UniversalEventHandler,
+} from '../main/events-broker/events-broker';
+import { InMemoryEventsBroker } from '../main/events-broker/in-memory-events-broker/in-memory-events-broker';
+import { InMemoryFailedEventsRepository } from '../main/events-broker/in-memory-events-broker/data-access/in-memory-failed-events-repository';
+import { NodeNativeEventsBroker } from '../main/events-broker/in-memory-events-broker/node-native-events-broker';
 
-await describe('Events Publish/Subscribe', async () => {
-    const messagesBroker = MessagesBrokerFactory.anInstance();
+await describe('Events Broker', async () => {
+    const brokers = [
+        InMemoryEventsBroker.Instance(new InMemoryFailedEventsRepository()),
+        NodeNativeEventsBroker.Instance(new InMemoryFailedEventsRepository()),
+    ];
 
+    for (const broker of brokers) {
+        await describe(broker.constructor.name, async () => {
+            await testCasesOn(broker);
+        });
+    }
+});
+
+async function testCasesOn(broker: EventsBroker): Promise<void> {
     const handler = mock.fn();
 
     beforeEach(() => {
         handler.mock.resetCalls();
 
-        messagesBroker.clear();
+        broker.clear();
     });
 
     class TestEvent extends Event<any> {
@@ -47,11 +65,11 @@ await describe('Events Publish/Subscribe', async () => {
     await it('should be able to subscribe and publish events', async () => {
         const event = new TestEvent();
 
-        messagesBroker.registerEventHandler(new TestEventHandler());
+        broker.registerEventHandler(new TestEventHandler());
 
         assert.equal(handler.mock.callCount(), 0);
 
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 1);
         assert.deepEqual(handler.mock.calls[0].arguments, ['TestEvent', event.payload]);
@@ -80,10 +98,10 @@ await describe('Events Publish/Subscribe', async () => {
             }
         }
 
-        messagesBroker.registerEventHandler(new TestEventHandler());
-        messagesBroker.registerEventHandler(new TestEventHandler2());
+        broker.registerEventHandler(new TestEventHandler());
+        broker.registerEventHandler(new TestEventHandler2());
 
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.deepEqual(handler.mock.calls[0].arguments, ['TestEvent', event.payload]);
         assert.deepEqual(handler2.mock.calls[0].arguments, ['TestEvent', event.payload]);
@@ -122,17 +140,17 @@ await describe('Events Publish/Subscribe', async () => {
             }
         }
 
-        messagesBroker.registerEventHandler(new TestEventHandler());
-        messagesBroker.registerEventHandler(new TestEventHandler2());
+        broker.registerEventHandler(new TestEventHandler());
+        broker.registerEventHandler(new TestEventHandler2());
 
         const event = new TestEvent();
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 1);
         assert.equal(handler2.mock.callCount(), 0);
 
         const event2 = new TestEvent2();
-        await messagesBroker.publish(event2, { correlationId: 'test' });
+        await broker.publish(event2, { correlationId: 'test' });
 
         assert.equal(handler2.mock.callCount(), 1);
     });
@@ -167,62 +185,146 @@ await describe('Events Publish/Subscribe', async () => {
         const event = new TestEvent();
         const event2 = new TestEvent2();
 
-        messagesBroker.registerUniversalEventHandler(new UniversalTestEventHandler());
+        broker.registerUniversalEventHandler(new UniversalTestEventHandler());
 
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 1);
 
-        await messagesBroker.publish(event2, { correlationId: 'test' });
+        await broker.publish(event2, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 2);
     });
 
     await it('in case a handler failed should be able to retry it again until reaching the retries value in the config if the handler keeps on failing', async () => {
+        if (!broker.shouldExplicitlyRetryFailedEvents()) return;
+
         handler.mock.mockImplementation(() => {
             throw new Error('error');
         });
 
-        messagesBroker.registerEventHandler(new TestEventHandler());
+        broker.registerEventHandler(new TestEventHandler());
 
         const event = new TestEvent();
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 1);
 
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 2);
 
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 3);
 
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 4);
 
-        await messagesBroker.retryFailedEvents();
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 4);
     });
 
     await it('in case a handler fail should be able to retry it again until reaching the retries value in the config if the handler keeps on failing or processing the event successfully', async () => {
+        if (!broker.shouldExplicitlyRetryFailedEvents()) return;
+
         handler.mock.mockImplementation(() => {
             throw new Error('error');
         });
 
-        messagesBroker.registerEventHandler(new TestEventHandler());
+        broker.registerEventHandler(new TestEventHandler());
 
         const event = new TestEvent();
-        await messagesBroker.publish(event, { correlationId: 'test' });
+        await broker.publish(event, { correlationId: 'test' });
 
         assert.equal(handler.mock.callCount(), 1);
 
         handler.mock.mockImplementation(() => {});
 
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 2);
 
-        await messagesBroker.retryFailedEvents();
-        await messagesBroker.retryFailedEvents();
+        await broker.retryFailedEvents();
+        await broker.retryFailedEvents();
         assert.equal(handler.mock.callCount(), 2);
     });
-});
+
+    await it('in case a universal handler failed should be able to retry it again until reaching the retries value in the config if the handler keeps on failing', async () => {
+        if (!broker.shouldExplicitlyRetryFailedEvents()) return;
+
+        class UniversalTestEventHandler extends UniversalEventHandler {
+            config(): { readonly retries: number } {
+                return { retries: 3 };
+            }
+
+            constructor() {
+                super('TestComponent');
+            }
+
+            async handle(event: TestEvent): Promise<void> {
+                handler(event.name, event.payload);
+            }
+        }
+
+        handler.mock.mockImplementation(() => {
+            throw new Error('error');
+        });
+
+        broker.registerUniversalEventHandler(new UniversalTestEventHandler());
+
+        const event = new TestEvent();
+        await broker.publish(event, { correlationId: 'test' });
+
+        assert.equal(handler.mock.callCount(), 1);
+
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 2);
+
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 3);
+
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 4);
+
+        await broker.retryFailedEvents();
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 4);
+    });
+
+    await it('in case a universal handler fail should be able to retry it again until reaching the retries value in the config if the handler keeps on failing or processing the event successfully', async () => {
+        if (!broker.shouldExplicitlyRetryFailedEvents()) return;
+
+        class UniversalTestEventHandler extends UniversalEventHandler {
+            config(): { readonly retries: number } {
+                return { retries: 3 };
+            }
+
+            constructor() {
+                super('TestComponent');
+            }
+
+            async handle(event: TestEvent): Promise<void> {
+                handler(event.name, event.payload);
+            }
+        }
+
+        handler.mock.mockImplementation(() => {
+            throw new Error('error');
+        });
+
+        broker.registerUniversalEventHandler(new UniversalTestEventHandler());
+
+        const event = new TestEvent();
+        await broker.publish(event, { correlationId: 'test' });
+
+        assert.equal(handler.mock.callCount(), 1);
+
+        handler.mock.mockImplementation(() => {});
+
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 2);
+
+        await broker.retryFailedEvents();
+        await broker.retryFailedEvents();
+        assert.equal(handler.mock.callCount(), 2);
+    });
+}

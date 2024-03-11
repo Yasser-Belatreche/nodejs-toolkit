@@ -1,4 +1,4 @@
-import { Event } from '../messages-broker';
+import { Event } from '../../events-broker';
 
 export interface FailedEvent {
     readonly id: string;

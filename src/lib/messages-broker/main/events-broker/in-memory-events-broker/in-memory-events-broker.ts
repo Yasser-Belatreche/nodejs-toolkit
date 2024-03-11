@@ -3,28 +3,20 @@ import * as crypto from 'crypto';
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
-import {
-    Answer,
-    Event,
-    EventHandler,
-    MessagesBroker,
-    RegisteredAnswers,
-    UniversalEventHandler,
-} from './messages-broker';
+import { Event, EventHandler, EventsBroker, UniversalEventHandler } from '../events-broker';
 
 import { FailedEventsRepository } from './data-access/failed-events-repository';
 
-class InMemoryMessagesBroker implements MessagesBroker {
+class InMemoryEventsBroker implements EventsBroker {
     private readonly universalEventHandlers: UniversalEventHandler[] = [];
     private readonly eventHandlers = new Map<string, Array<EventHandler<Event<any>>>>();
-    private readonly answers = new Map<string, Answer<any>>();
 
-    private static _instance: InMemoryMessagesBroker;
+    private static _instance: InMemoryEventsBroker;
 
-    static Instance(failedEventsRepository: FailedEventsRepository): InMemoryMessagesBroker {
+    static Instance(failedEventsRepository: FailedEventsRepository): InMemoryEventsBroker {
         if (this._instance) return this._instance;
 
-        this._instance = new InMemoryMessagesBroker(failedEventsRepository);
+        this._instance = new InMemoryEventsBroker(failedEventsRepository);
 
         return this._instance;
     }
@@ -77,13 +69,19 @@ class InMemoryMessagesBroker implements MessagesBroker {
         }
     }
 
+    shouldExplicitlyRetryFailedEvents(): boolean {
+        return true;
+    }
+
     async retryFailedEvents(): Promise<void> {
         const list = await this.failedEventsRepository.findAllUnsuccessfullWithRetriesLessThanMax();
 
         for (const failed of list) {
-            const handler = this.eventHandlers
-                .get(failed.event.name)
-                ?.find(h => h.idEquals(failed.handlerId));
+            const handler =
+                this.eventHandlers
+                    .get(failed.event.name)
+                    ?.find(h => h.idEquals(failed.handlerId)) ??
+                this.universalEventHandlers.find(h => h.idEquals(failed.handlerId));
 
             if (!handler) continue;
 
@@ -136,38 +134,10 @@ class InMemoryMessagesBroker implements MessagesBroker {
         this.universalEventHandlers.push(handler);
     }
 
-    async ask<R>(
-        question: string,
-        params: Record<string, any>,
-        session: SessionCorrelationId,
-    ): Promise<R> {
-        const answer = this.answers.get(question);
-
-        if (!answer) {
-            throw new DeveloperException(
-                'ANSWER_NOT_REGISTERED',
-                `There is no answer registered for the question: ${question}`,
-            );
-        }
-
-        return await answer.answer(params, session);
-    }
-
-    registerAnswer<Q extends keyof RegisteredAnswers>(answer: Answer<Q>): void {
-        if (this.answers.has(answer.question())) {
-            throw new Error(
-                `There is already an answer registered for the question: ${answer.question()}`,
-            );
-        }
-
-        this.answers.set(answer.question(), answer);
-    }
-
     clear(): void {
         this.eventHandlers.clear();
-        this.answers.clear();
         this.universalEventHandlers.length = 0;
     }
 }
 
-export { InMemoryMessagesBroker };
+export { InMemoryEventsBroker };

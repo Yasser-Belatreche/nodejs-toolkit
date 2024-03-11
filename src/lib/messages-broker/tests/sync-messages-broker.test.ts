@@ -1,14 +1,22 @@
 import assert from 'node:assert';
 import { describe, it, beforeEach } from 'node:test';
 
-import { Answer } from '../main/messages-broker';
-import { MessagesBrokerFactory } from '../main/messages-broker-factory';
+import { Answer, SyncMessagesBroker } from '../main/sync-messages-broker/sync-messages-broker';
+import { InMemorySyncMessagesBroker } from '../main/sync-messages-broker/in-memory-sync-messages-broker';
 
-await describe('Questions and Answers', async () => {
-    const messagesBroker = MessagesBrokerFactory.anInstance();
+await describe('Sync Messages Broker', async () => {
+    const brokers: SyncMessagesBroker[] = [InMemorySyncMessagesBroker.Instance()];
 
+    for (const broker of brokers) {
+        await describe(broker.constructor.name, async () => {
+            await testCasesOn(broker);
+        });
+    }
+});
+
+async function testCasesOn(broker: SyncMessagesBroker): Promise<void> {
     beforeEach(() => {
-        messagesBroker.clear();
+        broker.clear();
     });
 
     await it('should be able to register an answer for a question and get that answer when asking the same question', async () => {
@@ -22,9 +30,9 @@ await describe('Questions and Answers', async () => {
             }
         }
 
-        messagesBroker.registerAnswer(new TestAnswer());
+        broker.registerAnswer(new TestAnswer());
 
-        const result = await messagesBroker.ask(
+        const result = await broker.ask(
             'Tests.First',
             { trackingId: 'hello' },
             { correlationId: 'test' },
@@ -54,10 +62,10 @@ await describe('Questions and Answers', async () => {
             }
         }
 
-        messagesBroker.registerAnswer(new TestAnswer());
+        broker.registerAnswer(new TestAnswer());
 
         try {
-            messagesBroker.registerAnswer(new TestAnswer2());
+            broker.registerAnswer(new TestAnswer2());
             assert.fail('Should not be able to register multiple answers to the same question');
         } catch (e) {
             assert.equal(
@@ -69,11 +77,7 @@ await describe('Questions and Answers', async () => {
 
     await it('should throw and error when asking a question that has no answer registered', async () => {
         try {
-            await messagesBroker.ask(
-                'Tests.First',
-                { trackingId: 'test' },
-                { correlationId: 'test' },
-            );
+            await broker.ask('Tests.First', { trackingId: 'test' }, { correlationId: 'test' });
             assert.fail(
                 'Should throw an error when asking a question that has no answer registered',
             );
@@ -106,15 +110,15 @@ await describe('Questions and Answers', async () => {
             }
         }
 
-        messagesBroker.registerAnswer(new TestAnswer1());
-        messagesBroker.registerAnswer(new TestAnswer2());
+        broker.registerAnswer(new TestAnswer1());
+        broker.registerAnswer(new TestAnswer2());
 
-        const result1 = await messagesBroker.ask(
+        const result1 = await broker.ask(
             'Tests.First',
             { trackingId: 'test' },
             { correlationId: 'test' },
         );
-        const result2 = await messagesBroker.ask(
+        const result2 = await broker.ask(
             'Tests.Second',
             { something: 'something' },
             { correlationId: 'test' },
@@ -123,4 +127,4 @@ await describe('Questions and Answers', async () => {
         assert.equal(result1, 32);
         assert.equal(result2, true);
     });
-});
+}

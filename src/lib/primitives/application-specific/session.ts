@@ -14,12 +14,14 @@ export interface Session {
 
     // exists in case of using the api key authentication
     apiKey?: {
+        id: string;
         name: string;
         permissions: string[];
     };
 
     // exists in case of using the client authentication
     client?: {
+        id: string;
         name: string;
         permissions: string[];
     };

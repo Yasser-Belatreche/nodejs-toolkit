@@ -12,7 +12,8 @@
     "test:lib:scheduler": "node --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
     "test:lib:broker": "node --test --import tsx src/lib/messages-broker/tests/*.test.ts",
     "test:lib:primitives": "node --test --import tsx src/lib/primitives/**/**/*.test.ts",
-    "test": "node ---test --import tsx"
+    "test": "node ---test --import tsx",
+    "docker:dev": "docker compose -f docker/dev/docker-compose.yml up"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.0",
+    "amqplib": "^0.10.3",
     "mongoose": "^8.1.1",
     "ulid": "^2.3.0"
   }

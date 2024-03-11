@@ -9,7 +9,8 @@ const MessagesBrokerInitializer = {
     Init(scheduler: JobsScheduler, broker: MessagesBroker) {
         if (IsInitialized) return;
 
-        scheduler.register(new RetryFailedEventsScheduledJob(broker));
+        if (broker.shouldExplicitlyRetryFailedEvents())
+            scheduler.register(new RetryFailedEventsScheduledJob(broker));
 
         IsInitialized = true;
     },

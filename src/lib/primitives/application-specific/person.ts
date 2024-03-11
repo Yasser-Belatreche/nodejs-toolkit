@@ -1,5 +1,5 @@
 export interface Person {
-    trackingId: string;
+    id: string;
     firstName: string;
     lastName: string;
     phones: string[];
