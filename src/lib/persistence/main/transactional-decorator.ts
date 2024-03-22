@@ -9,8 +9,14 @@ function Transactional(): (
         const originalMethod = descriptor.value;
 
         descriptor.value = async function (...args: any[]) {
-            await PersistenceFactory.anInstance().transaction(async () => {
-                await originalMethod.apply(this, args);
+            return await PersistenceFactory.anInstance().transaction(async () => {
+                let result = originalMethod.apply(this, args);
+
+                if (result instanceof Promise) {
+                    result = await result;
+                }
+
+                return result;
             });
         };
 

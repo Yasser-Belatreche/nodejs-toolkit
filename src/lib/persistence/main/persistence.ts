@@ -3,7 +3,7 @@ export interface Persistence {
 
     disconnect(): Promise<void>;
 
-    transaction(func: () => Promise<void>): Promise<void>;
+    transaction<T>(func: () => Promise<T>): Promise<T>;
 
     clear(): Promise<void>;
 

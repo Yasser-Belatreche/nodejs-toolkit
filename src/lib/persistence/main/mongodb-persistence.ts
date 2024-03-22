@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { exec } from 'child_process';
 
 import { Persistence } from './persistence';
+import { DeveloperException } from '../../primitives/application-specific/exceptions/developer-exception';
 
 interface Config {
     uri: string;
@@ -33,23 +34,30 @@ class MongodbPersistence implements Persistence {
     }
 
     async disconnect(): Promise<void> {
-        if (!this.connection) return;
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
 
         await this.connection.disconnect();
     }
 
-    async transaction(func: () => Promise<void>): Promise<void> {
-        if (!this.connection) return;
+    async transaction<T>(func: () => Promise<T>): Promise<T> {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
 
         const session = await this.connection.startSession();
 
+        let result: T;
+
         await session.withTransaction(async () => {
-            await func();
+            result = await func();
         });
+
+        return result!;
     }
 
     async clear(): Promise<void> {
-        if (!this.connection) return;
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
 
         await this.connection.connection.db.dropDatabase();
     }
