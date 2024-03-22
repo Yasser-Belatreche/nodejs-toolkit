@@ -10,11 +10,11 @@ export interface EventsBroker {
 
     retryFailedEvents(): Promise<void>;
 
-    registerUniversalEventHandler(handler: UniversalEventHandler): void;
+    registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void>;
 
-    registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): void;
+    registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void>;
 
-    clear(): void;
+    clear(): Promise<void>;
 }
 
 export abstract class Event<T extends Record<string, any>> {
@@ -28,7 +28,7 @@ export abstract class Event<T extends Record<string, any>> {
         const event = new (Event as any)(state.eventId, state.occurredAt);
 
         event.eventId = state.eventId;
-        event.occurredAt = state.occurredAt;
+        event.occurredAt = new Date(state.occurredAt);
         event.payload = state.payload;
         event.name = state.name;
 
@@ -56,7 +56,9 @@ export abstract class EventHandler<E extends Event<any>> {
 
     abstract handle(event: E, session: SessionCorrelationId): Promise<void>;
 
-    abstract config?(): { readonly retries: number };
+    config(): { readonly retries: number } {
+        return { retries: 3 };
+    }
 
     private readonly _id: string;
 

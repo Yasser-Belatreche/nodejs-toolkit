@@ -26,7 +26,7 @@ const PersistenceFactory = {
 
         return MongodbPersistence.Instance({
             uri: process.env.MONGODB_URI,
-            backupDir: path.join(__dirname, '../../../../outputs/db-backups'),
+            backupDir: path.join(__dirname, '../../../../storage/db-backups'),
         });
     },
 };

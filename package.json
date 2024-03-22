@@ -13,7 +13,8 @@
     "test:lib:broker": "node --test --import tsx src/lib/messages-broker/tests/*.test.ts",
     "test:lib:primitives": "node --test --import tsx src/lib/primitives/**/**/*.test.ts",
     "test": "node ---test --import tsx",
-    "docker:dev": "docker compose -f docker/dev/docker-compose.yml up"
+    "docker:dev": "docker compose -f docker/dev/docker-compose.yml up",
+    "docker:test": "docker compose -f docker/test/docker-compose.yml up"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,7 @@
     "npm": "10.2.4"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.5",
     "@types/node": "^20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",

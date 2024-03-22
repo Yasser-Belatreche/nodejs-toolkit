@@ -24,11 +24,11 @@ class NodeNativeEventsBroker implements EventsBroker {
     private constructor(private readonly failedEventsRepository: FailedEventsRepository) {}
 
     async publish<T extends Event<any>>(event: T, session: SessionCorrelationId): Promise<void> {
-        this.eventsEmitter.emit('___UNIVERSAL___', event, session);
+        this.eventsEmitter.emit(this.UNIVERSAL_EVENT_NAME, event, session);
         this.eventsEmitter.emit(event.name, event, session);
     }
 
-    registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): void {
+    async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
         this.eventsEmitter.on(handler.eventName(), (event: T, session: SessionCorrelationId) => {
             handler.handle(event, session).catch(async e => {
                 await this.failedEventsRepository.save({
@@ -54,9 +54,9 @@ class NodeNativeEventsBroker implements EventsBroker {
         this.eventHandlers.get(handler.eventName())?.push(handler);
     }
 
-    registerUniversalEventHandler(handler: UniversalEventHandler): void {
+    async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
         this.eventsEmitter.on(
-            '___UNIVERSAL___',
+            this.UNIVERSAL_EVENT_NAME,
             (event: Event<any>, session: SessionCorrelationId) => {
                 handler.handle(event, session).catch(async e => {
                     await this.failedEventsRepository.save({
@@ -116,8 +116,9 @@ class NodeNativeEventsBroker implements EventsBroker {
         }
     }
 
-    clear(): void {
+    async clear(): Promise<void> {
         this.eventsEmitter.removeAllListeners();
+        this.eventHandlers.clear();
     }
 }
 

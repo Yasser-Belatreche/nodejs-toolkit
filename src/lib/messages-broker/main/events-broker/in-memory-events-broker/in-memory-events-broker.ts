@@ -100,7 +100,7 @@ class InMemoryEventsBroker implements EventsBroker {
         }
     }
 
-    registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): void {
+    async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
         const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
         const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
             h.find(eh => eh.idEquals(handler.id())),
@@ -119,7 +119,7 @@ class InMemoryEventsBroker implements EventsBroker {
         this.eventHandlers.get(handler.eventName())!.push(handler);
     }
 
-    registerUniversalEventHandler(handler: UniversalEventHandler): void {
+    async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
         const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
         const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
             h.find(eh => eh.idEquals(handler.id())),
@@ -134,7 +134,7 @@ class InMemoryEventsBroker implements EventsBroker {
         this.universalEventHandlers.push(handler);
     }
 
-    clear(): void {
+    async clear(): Promise<void> {
         this.eventHandlers.clear();
         this.universalEventHandlers.length = 0;
     }
