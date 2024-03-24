@@ -1,12 +1,23 @@
-import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
+import { describe, it, beforeEach } from 'node:test';
 
-import { wait } from '../../primitives/generic/helpers/wait';
-import { CacheFactory } from '../main/cache-factory';
+import { wait } from '@lib/primitives/generic/helpers/wait';
+
+import { Cache } from '../main/cache';
+
+import { InMemoryCache } from '../main/in-memory-cache';
 
 await describe('cache test', async () => {
-    const cache = CacheFactory.anInstance();
+    const providers: Cache[] = [InMemoryCache.Instance()];
 
+    for (const cache of providers) {
+        await describe(cache.constructor.name, async () => {
+            await testCasesOn(cache);
+        });
+    }
+});
+
+async function testCasesOn(cache: Cache): Promise<void> {
     beforeEach(async () => {
         await cache.clear();
     });
@@ -49,6 +60,6 @@ await describe('cache test', async () => {
 
         assert.strictEqual(await cache.get('test'), null);
     });
-});
+}
 
 export {};

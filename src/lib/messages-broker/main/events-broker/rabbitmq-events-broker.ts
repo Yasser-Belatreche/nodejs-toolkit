@@ -22,29 +22,46 @@ class RabbitmqEventsBroker implements EventsBroker {
 
     private connection: amqp.Connection | undefined;
     private channel: amqp.Channel | undefined;
-    private readonly UNIVERSAL_EXCHANGE = 'universal';
+
+    private readonly UNIVERSAL_EXCHANGE = 'Universal';
+
+    private haveAtLeastOneUniversalConsumer = false;
     private readonly consumers: string[] = [];
+    private readonly eventsThatHaveConsumers = new Set<string>();
 
     private constructor(private readonly configs: Configs) {}
 
     async publish<T extends Event<any>>(event: T, session: SessionCorrelationId): Promise<void> {
         await this.assertConnected();
 
-        await this.channel!.assertExchange(event.name, 'direct', { durable: this.configs.durable });
-        await this.channel!.assertExchange(this.UNIVERSAL_EXCHANGE, 'fanout', {
-            durable: this.configs.durable,
-        });
+        if (this.haveAtLeastOneUniversalConsumer) {
+            await this.channel!.assertExchange(this.UNIVERSAL_EXCHANGE, 'fanout', {
+                durable: this.configs.durable,
+            });
 
-        this.channel!.publish(event.name, event.name, Buffer.from(JSON.stringify(event.state)), {
-            correlationId: session.correlationId,
-            persistent: this.configs.durable,
-        });
-        this.channel!.publish(
-            this.UNIVERSAL_EXCHANGE,
-            '',
-            Buffer.from(JSON.stringify(event.state)),
-            { correlationId: session.correlationId, persistent: this.configs.durable },
-        );
+            this.channel!.publish(
+                this.UNIVERSAL_EXCHANGE,
+                '',
+                Buffer.from(JSON.stringify(event.state)),
+                { correlationId: session.correlationId, persistent: this.configs.durable },
+            );
+        }
+
+        if (this.eventsThatHaveConsumers.has(event.name)) {
+            await this.channel!.assertExchange(event.name, 'direct', {
+                durable: this.configs.durable,
+            });
+
+            this.channel!.publish(
+                event.name,
+                event.name,
+                Buffer.from(JSON.stringify(event.state)),
+                {
+                    correlationId: session.correlationId,
+                    persistent: this.configs.durable,
+                },
+            );
+        }
     }
 
     async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
@@ -80,6 +97,7 @@ class RabbitmqEventsBroker implements EventsBroker {
         );
 
         this.consumers.push(consumerTag);
+        this.eventsThatHaveConsumers.add(handler.eventName());
     }
 
     async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
@@ -115,6 +133,7 @@ class RabbitmqEventsBroker implements EventsBroker {
         );
 
         this.consumers.push(consumerTag);
+        this.haveAtLeastOneUniversalConsumer = true;
     }
 
     shouldExplicitlyRetryFailedEvents(): boolean {
