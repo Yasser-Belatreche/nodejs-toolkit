@@ -2,7 +2,13 @@ import amqp from 'amqplib';
 
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 
-import { Event, EventHandler, EventsBroker, UniversalEventHandler } from './events-broker';
+import {
+    Event,
+    EventHandler,
+    EventsBroker,
+    EventsBrokerHealth,
+    UniversalEventHandler,
+} from './events-broker';
 
 interface Configs {
     uri: string;
@@ -148,6 +154,14 @@ class RabbitmqEventsBroker implements EventsBroker {
         await Promise.all(
             this.consumers.map(async consumer => await this.channel?.cancel(consumer)),
         );
+    }
+
+    async health(): Promise<EventsBrokerHealth> {
+        if (!this.connection) {
+            return { provider: 'rabbitmq', status: 'down', message: 'the connection is not open' };
+        }
+
+        return { provider: 'rabbitmq', status: 'up' };
     }
 
     private async assertConnected(): Promise<void> {

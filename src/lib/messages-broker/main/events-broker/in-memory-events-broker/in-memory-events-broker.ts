@@ -3,7 +3,13 @@ import * as crypto from 'crypto';
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
-import { Event, EventHandler, EventsBroker, UniversalEventHandler } from '../events-broker';
+import {
+    Event,
+    EventHandler,
+    EventsBroker,
+    EventsBrokerHealth,
+    UniversalEventHandler,
+} from '../events-broker';
 
 import { FailedEventsRepository } from './data-access/failed-events-repository';
 
@@ -137,6 +143,10 @@ class InMemoryEventsBroker implements EventsBroker {
     async clear(): Promise<void> {
         this.eventHandlers.clear();
         this.universalEventHandlers.length = 0;
+    }
+
+    async health(): Promise<EventsBrokerHealth> {
+        return { provider: 'in-memory', status: 'up' };
     }
 }
 

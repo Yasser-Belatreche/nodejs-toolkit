@@ -3,7 +3,13 @@ import EventEmitter from 'node:events';
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 
 import { FailedEventsRepository } from './data-access/failed-events-repository';
-import { Event, EventHandler, EventsBroker, UniversalEventHandler } from '../events-broker';
+import {
+    Event,
+    EventHandler,
+    EventsBroker,
+    EventsBrokerHealth,
+    UniversalEventHandler,
+} from '../events-broker';
 
 class NodeNativeEventsBroker implements EventsBroker {
     private readonly eventsEmitter = new EventEmitter();
@@ -119,6 +125,10 @@ class NodeNativeEventsBroker implements EventsBroker {
     async clear(): Promise<void> {
         this.eventsEmitter.removeAllListeners();
         this.eventHandlers.clear();
+    }
+
+    async health(): Promise<EventsBrokerHealth> {
+        return { provider: 'node-events-module', status: 'up' };
     }
 }
 

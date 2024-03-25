@@ -11,8 +11,8 @@ await client.hSet('user-session:1234', {
     surname: 'Smith',
     company: 'Redis',
     age: 29,
-    // date: new Date(),
 });
 
-const userSession = await client.get('user-session:1234');
+const userSession = await client.hGetAll('user-session:1234');
+
 console.log(userSession);

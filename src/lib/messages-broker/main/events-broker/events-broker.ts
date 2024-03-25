@@ -15,6 +15,14 @@ export interface EventsBroker {
     registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void>;
 
     clear(): Promise<void>;
+
+    health(): Promise<EventsBrokerHealth>;
+}
+
+export interface EventsBrokerHealth {
+    provider: string;
+    status: 'up' | 'down';
+    message?: string;
 }
 
 export abstract class Event<T extends Record<string, any>> {

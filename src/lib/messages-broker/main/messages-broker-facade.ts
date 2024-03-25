@@ -4,6 +4,7 @@ import {
     Event,
     EventHandler,
     EventsBroker,
+    EventsBrokerHealth,
     UniversalEventHandler,
 } from './events-broker/events-broker';
 import {
@@ -55,6 +56,10 @@ class MessagesBrokerFacade implements MessagesBroker {
     async clear(): Promise<void> {
         await this.eventsBroker.clear();
         await this.syncMessagesBroker.clear();
+    }
+
+    async health(): Promise<EventsBrokerHealth> {
+        return await this.eventsBroker.health();
     }
 }
 
