@@ -15,8 +15,8 @@ await describe('Sync Messages Broker', async () => {
 });
 
 async function testCasesOn(broker: SyncMessagesBroker): Promise<void> {
-    beforeEach(() => {
-        broker.clear();
+    beforeEach(async () => {
+        await broker.clear();
     });
 
     await it('should be able to register an answer for a question and get that answer when asking the same question', async () => {
