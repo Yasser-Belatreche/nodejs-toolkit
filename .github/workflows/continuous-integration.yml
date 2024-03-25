@@ -1,0 +1,27 @@
+name: Continuous Integration
+
+on:
+    push:
+        branches:
+            - 'master'
+
+jobs:
+    lint-test:
+        name: Lint & Test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '20.11.0'
+                  cache: npm
+            - name: Install Dependencies
+              run: npm install
+            - name: Run Lint
+              run: npm run lint
+            - name: Setup Test Environment
+              run: npm run docker:test -- -d
+            - name: Run Tests
+              run: npm test
