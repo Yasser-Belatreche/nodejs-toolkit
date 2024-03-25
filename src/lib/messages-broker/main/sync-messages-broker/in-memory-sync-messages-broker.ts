@@ -46,7 +46,7 @@ class InMemorySyncMessagesBroker implements SyncMessagesBroker {
         this.answers.set(answer.question(), answer);
     }
 
-    clear(): void {
+    async clear(): Promise<void> {
         this.answers.clear();
     }
 }

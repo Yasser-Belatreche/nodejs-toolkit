@@ -1,14 +1,19 @@
 import assert from 'node:assert';
-import { describe, it, beforeEach } from 'node:test';
+import { faker } from '@faker-js/faker';
+import { describe, it, afterEach } from 'node:test';
 
 import { wait } from '@lib/primitives/generic/helpers/wait';
 
 import { Cache } from '../main/cache';
 
 import { InMemoryCache } from '../main/in-memory-cache';
+import { RedisCache } from '../main/redis-cache';
 
 await describe('cache test', async () => {
-    const providers: Cache[] = [InMemoryCache.Instance()];
+    const providers: Cache[] = [
+        InMemoryCache.Instance(),
+        RedisCache.Instance({ url: 'redis://localhost:6379' }),
+    ];
 
     for (const cache of providers) {
         await describe(cache.constructor.name, async () => {
@@ -18,20 +23,21 @@ await describe('cache test', async () => {
 });
 
 async function testCasesOn(cache: Cache): Promise<void> {
-    beforeEach(async () => {
+    afterEach(async () => {
         await cache.clear();
     });
 
     await it('should save stuff and be able to retreive them', async t => {
         await cache.set('test', 'test');
-
         assert.strictEqual(await cache.get('test'), 'test');
-    });
 
-    await it('should save stuff and be able to retreive them', async () => {
-        await cache.set('test', 'test');
+        const number = faker.number.int();
+        await cache.set('number', number);
+        assert.strictEqual(await cache.get<number>('number'), number);
 
-        assert.strictEqual(await cache.get('test'), 'test', 'test');
+        const obj = { test: 'test' };
+        await cache.set('obj', obj);
+        assert.deepStrictEqual(await cache.get('obj'), obj);
     });
 
     await it('should be able to clear the cache', async () => {
@@ -60,6 +66,23 @@ async function testCasesOn(cache: Cache): Promise<void> {
 
         assert.strictEqual(await cache.get('test'), null);
     });
-}
 
-export {};
+    await it('should not override the value if exists when using setNx until it expires', async t => {
+        const bool = await cache.setNx('test', 'test', { ttl: 10 });
+
+        assert.ok(bool);
+        assert.strictEqual(await cache.get('test'), 'test');
+
+        const bool2 = await cache.setNx('test', 'test2');
+
+        assert.ok(!bool2);
+        assert.strictEqual(await cache.get('test'), 'test');
+
+        await wait(11);
+
+        const bool3 = await cache.setNx('test', 'test2');
+
+        assert.ok(bool3);
+        assert.strictEqual(await cache.get('test'), 'test2');
+    });
+}

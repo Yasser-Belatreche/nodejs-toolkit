@@ -2,7 +2,7 @@ import fs from 'fs';
 import mongoose from 'mongoose';
 import { exec } from 'child_process';
 
-import { Persistence } from './persistence';
+import { Persistence, PersistenceHealth } from './persistence';
 import { DeveloperException } from '../../primitives/application-specific/exceptions/developer-exception';
 
 interface Config {
@@ -86,6 +86,26 @@ class MongodbPersistence implements Persistence {
                 },
             );
         });
+    }
+
+    async health(): Promise<PersistenceHealth> {
+        if (!this.connection)
+            return {
+                provider: 'mongodb',
+                status: 'down',
+                message: 'the database is not connected',
+            };
+
+        if (this.connection.connection.readyState === 0)
+            return {
+                provider: 'mongodb',
+                status: 'down',
+                message: 'the database has disconnected',
+            };
+
+        if (this.connection.connection.readyState === 1) return { status: 'up' };
+
+        return { provider: 'mongodb', status: 'down', message: 'the database is not connected' };
     }
 }
 

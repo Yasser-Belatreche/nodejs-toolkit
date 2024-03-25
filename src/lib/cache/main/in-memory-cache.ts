@@ -1,4 +1,4 @@
-import { Cache, CacheOptions } from './cache';
+import { Cache, CacheHealth, CacheOptions } from './cache';
 
 class InMemoryCache implements Cache {
     private readonly map = new Map<
@@ -42,8 +42,22 @@ class InMemoryCache implements Cache {
         this.map.set(key, { value, createdAt: new Date(), options });
     }
 
+    async setNx<T>(key: string, value: T, options?: CacheOptions): Promise<boolean> {
+        const entry = await this.get<T>(key);
+
+        if (entry) return false;
+
+        await this.set(key, value, options);
+
+        return true;
+    }
+
     async clear(): Promise<void> {
         this.map.clear();
+    }
+
+    async health(): Promise<CacheHealth> {
+        return { provider: 'in-memory', status: 'up' };
     }
 }
 

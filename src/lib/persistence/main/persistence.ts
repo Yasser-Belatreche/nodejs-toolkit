@@ -10,4 +10,12 @@ export interface Persistence {
     backup(): Promise<void>;
 
     restore(): Promise<void>;
+
+    health(): Promise<PersistenceHealth>;
+}
+
+export interface PersistenceHealth {
+    provider: string;
+    status: 'up' | 'down';
+    message?: string;
 }

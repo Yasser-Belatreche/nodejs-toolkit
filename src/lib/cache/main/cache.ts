@@ -3,9 +3,19 @@ export interface Cache {
 
     set<T>(key: string, value: T, options?: CacheOptions): Promise<void>;
 
+    setNx<T>(key: string, value: T, options?: CacheOptions): Promise<boolean>;
+
     invalidate(key: string): Promise<void>;
 
     clear(): Promise<void>;
+
+    health(): Promise<CacheHealth>;
+}
+
+export interface CacheHealth {
+    provider: string;
+    status: 'up' | 'down';
+    message?: string;
 }
 
 export interface CacheOptions {

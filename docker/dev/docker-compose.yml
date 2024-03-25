@@ -5,7 +5,7 @@ services:
 
   rabbitmq:
     image: "rabbitmq:3-management"
-    container_name: "rabbitmq"
+    container_name: "nodejs-building-blocks-rabbitmq-dev"
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -17,9 +17,10 @@ services:
 
   redis:
     image: "redis/redis-stack:latest"
-    container_name: "redis"
+    container_name: "nodejs-building-blocks-redis-dev"
     ports:
       - "6379:6379"
+      - "8001:8001"
     volumes:
       - "redis-data:/data"
 

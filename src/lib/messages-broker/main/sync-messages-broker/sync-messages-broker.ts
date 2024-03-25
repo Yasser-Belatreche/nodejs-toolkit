@@ -9,7 +9,7 @@ export interface SyncMessagesBroker {
 
     registerAnswer<Q extends keyof RegisteredAnswers>(answer: Answer<Q>): void;
 
-    clear(): void;
+    clear(): Promise<void>;
 }
 
 export interface Answer<Q extends keyof RegisteredAnswers> {

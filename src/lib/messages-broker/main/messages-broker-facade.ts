@@ -24,12 +24,12 @@ class MessagesBrokerFacade implements MessagesBroker {
         await this.eventsBroker.publish(event, session);
     }
 
-    registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): void {
-        this.eventsBroker.registerEventHandler(handler);
+    async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
+        await this.eventsBroker.registerEventHandler(handler);
     }
 
-    registerUniversalEventHandler(handler: UniversalEventHandler): void {
-        this.eventsBroker.registerUniversalEventHandler(handler);
+    async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
+        await this.eventsBroker.registerUniversalEventHandler(handler);
     }
 
     shouldExplicitlyRetryFailedEvents(): boolean {
@@ -52,9 +52,9 @@ class MessagesBrokerFacade implements MessagesBroker {
         this.syncMessagesBroker.registerAnswer(answer);
     }
 
-    clear(): void {
-        this.eventsBroker.clear();
-        this.syncMessagesBroker.clear();
+    async clear(): Promise<void> {
+        await this.eventsBroker.clear();
+        await this.syncMessagesBroker.clear();
     }
 }
 
