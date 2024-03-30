@@ -1,5 +1,8 @@
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
-import { Event, UniversalEventHandler } from '@lib/messages-broker/main/messages-broker';
+import {
+    Event,
+    UniversalEventHandler,
+} from '@lib/messages-broker/main/events-broker/events-broker';
 
 import { SendEventToWebhooks } from '../domain/send-webhook-event';
 

@@ -9,7 +9,7 @@ function Transactional(): (
         const originalMethod = descriptor.value;
 
         descriptor.value = async function (...args: any[]) {
-            return await PersistenceFactory.anInstance().transaction(async () => {
+            return await PersistenceFactory.aMongoDbPersistence().transaction(async () => {
                 let result = originalMethod.apply(this, args);
 
                 if (result instanceof Promise) {

@@ -39,7 +39,7 @@ class InMemoryEventsBroker implements EventsBroker {
                     event,
                     eventOccuredAt: event.occurredAt,
                     handlerId: handler.id(),
-                    handlerMaxRetries: handler.config?.().retries ?? 0,
+                    handlerMaxRetries: handler.config().retries ?? 0,
                     sessionCorrelationId: session.correlationId,
 
                     retries: 0,
@@ -63,7 +63,7 @@ class InMemoryEventsBroker implements EventsBroker {
                     event,
                     eventOccuredAt: event.occurredAt,
                     handlerId: handler.id(),
-                    handlerMaxRetries: handler.config?.().retries ?? 0,
+                    handlerMaxRetries: handler.config().retries ?? 0,
                     sessionCorrelationId: session.correlationId,
 
                     retries: 0,
@@ -107,6 +107,8 @@ class InMemoryEventsBroker implements EventsBroker {
     }
 
     async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
+        if (handler.config().disabled) return;
+
         const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
         const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
             h.find(eh => eh.idEquals(handler.id())),
@@ -126,6 +128,8 @@ class InMemoryEventsBroker implements EventsBroker {
     }
 
     async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
+        if (handler.config().disabled) return;
+
         const foundInUniversal = !!this.universalEventHandlers.find(h => h.idEquals(handler.id()));
         const foundInEventHandlers = !!Array.from(this.eventHandlers.values()).find(h =>
             h.find(eh => eh.idEquals(handler.id())),

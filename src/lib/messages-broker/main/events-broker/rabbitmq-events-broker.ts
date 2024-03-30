@@ -71,6 +71,8 @@ class RabbitmqEventsBroker implements EventsBroker {
     }
 
     async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
+        if (handler.config().disabled) return;
+
         await this.assertConnected();
 
         await this.channel!.assertExchange(handler.eventName(), 'direct', {
@@ -107,6 +109,8 @@ class RabbitmqEventsBroker implements EventsBroker {
     }
 
     async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
+        if (handler.config().disabled) return;
+
         await this.assertConnected();
 
         await this.channel!.assertExchange(this.UNIVERSAL_EXCHANGE, 'fanout', {

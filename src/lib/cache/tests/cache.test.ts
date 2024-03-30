@@ -1,19 +1,29 @@
 import assert from 'node:assert';
 import { faker } from '@faker-js/faker';
-import { describe, it, afterEach } from 'node:test';
+import { describe, it, afterEach, before, after } from 'node:test';
 
+import { Library } from '@lib/library';
 import { wait } from '@lib/primitives/generic/helpers/wait';
+import { PersistenceFactory } from '@lib/persistence/main/persistence-factory';
 
 import { Cache } from '../main/cache';
 
-import { InMemoryCache } from '../main/in-memory-cache';
 import { RedisCache } from '../main/redis-cache';
+import { InMemoryCache } from '../main/in-memory-cache';
 
 await describe('cache test', async () => {
     const providers: Cache[] = [
         InMemoryCache.Instance(),
-        RedisCache.Instance({ url: 'redis://localhost:6379' }),
+        RedisCache.Instance(Library.aRedisClient()),
     ];
+
+    before(async () => {
+        await PersistenceFactory.aRedisPersistence().connect();
+    });
+
+    after(async () => {
+        await PersistenceFactory.aRedisPersistence().disconnect();
+    });
 
     for (const cache of providers) {
         await describe(cache.constructor.name, async () => {

@@ -59,13 +59,18 @@ export abstract class Event<T extends Record<string, any>> {
     }
 }
 
+export interface Config {
+    retries?: number;
+    disabled?: boolean;
+}
+
 export abstract class EventHandler<E extends Event<any>> {
     abstract eventName(): E['name'];
 
     abstract handle(event: E, session: SessionCorrelationId): Promise<void>;
 
-    config(): { readonly retries: number } {
-        return { retries: 3 };
+    config(): Config {
+        return {};
     }
 
     private readonly _id: string;

@@ -4,6 +4,7 @@ import { wait } from '@lib/primitives/generic/helpers/wait';
 import { describe, it, mock, afterEach, Mock } from 'node:test';
 
 import {
+    Config,
     Event,
     EventHandler,
     EventsBroker,
@@ -47,6 +48,22 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
 
         assert.equal(handlerSpy.mock.callCount(), 1);
         assert.deepEqual(handlerSpy.mock.calls[0].arguments, [event.name, event.payload]);
+    });
+
+    await it('should not run the handler of a disabled events handler', async () => {
+        const event = getEventInstance();
+
+        const { handler, handlerSpy } = getEventHandlerInstance(event.name, { disabled: true });
+
+        await broker.registerEventHandler(handler);
+
+        assert.equal(handlerSpy.mock.callCount(), 0);
+
+        await broker.publish(event, { correlationId: 'test' });
+
+        await wait(50);
+
+        assert.equal(handlerSpy.mock.callCount(), 0);
     });
 
     await it('should be able to register multiple handlers for the same event ', async () => {
@@ -121,7 +138,7 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
     await it('in case a handler failed should be able to retry it again until reaching the retries value in the config if the handler keeps on failing', async () => {
         if (!broker.shouldExplicitlyRetryFailedEvents()) return;
 
-        const { event, handler, handlerSpy } = getTestInstances();
+        const { event, handler, handlerSpy } = getTestInstances(undefined, { retries: 3 });
 
         handlerSpy.mock.mockImplementation(() => {
             throw new Error('error');
@@ -152,7 +169,7 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
     await it('in case a handler fail should be able to retry it again until reaching the retries value in the config if the handler keeps on failing or processing the event successfully', async () => {
         if (!broker.shouldExplicitlyRetryFailedEvents()) return;
 
-        const { event, handler, handlerSpy } = getTestInstances();
+        const { event, handler, handlerSpy } = getTestInstances(undefined, { retries: 3 });
 
         handlerSpy.mock.mockImplementation(() => {
             throw new Error('error');
@@ -190,6 +207,10 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
         class UniversalTestEventHandler extends UniversalEventHandler {
             constructor() {
                 super(faker.lorem.sentence());
+            }
+
+            config(): Config {
+                return { retries: 3 };
             }
 
             async handle(event: Event<any>): Promise<void> {
@@ -235,6 +256,10 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
                 super(faker.lorem.sentence());
             }
 
+            config(): Config {
+                return { retries: 3 };
+            }
+
             async handle(event: Event<any>): Promise<void> {
                 handlerSpy();
             }
@@ -259,13 +284,16 @@ async function testCasesOn(broker: EventsBroker): Promise<void> {
     });
 }
 
-function getTestInstances(eventName?: string): {
+function getTestInstances(
+    eventName?: string,
+    handlerConfig?: Config,
+): {
     handlerSpy: Mock<(...args: any[]) => undefined>;
     event: Event<any>;
     handler: EventHandler<Event<any>>;
 } {
     const event = getEventInstance(eventName);
-    const { handler, handlerSpy } = getEventHandlerInstance(event.name);
+    const { handler, handlerSpy } = getEventHandlerInstance(event.name, handlerConfig);
 
     return { event, handler, handlerSpy };
 }
@@ -288,7 +316,10 @@ function getEventInstance(eventName?: string): Event<any> {
     return new TestEvent();
 }
 
-function getEventHandlerInstance(eventName: string): {
+function getEventHandlerInstance(
+    eventName: string,
+    config?: Config,
+): {
     handlerSpy: Mock<(...args: any[]) => undefined>;
     handler: EventHandler<Event<any>>;
 } {
@@ -297,6 +328,10 @@ function getEventHandlerInstance(eventName: string): {
     class TestEventHandler extends EventHandler<Event<any>> {
         eventName(): string {
             return eventName;
+        }
+
+        config(): Config {
+            return config ?? super.config();
         }
 
         constructor() {

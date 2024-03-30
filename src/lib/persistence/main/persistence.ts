@@ -5,7 +5,7 @@ export interface Persistence {
 
     transaction<T>(func: () => Promise<T>): Promise<T>;
 
-    clear(): Promise<void>;
+    shouldBackup(): boolean;
 
     backup(): Promise<void>;
 

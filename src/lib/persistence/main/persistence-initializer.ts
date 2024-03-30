@@ -11,7 +11,9 @@ const PersistenceInitializer = {
 
         await persistence.connect();
 
-        scheduler.register(new BackupScheduledJob(persistence));
+        if (persistence.shouldBackup()) {
+            scheduler.register(new BackupScheduledJob(persistence));
+        }
 
         IsInitialized = true;
     },

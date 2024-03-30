@@ -6,15 +6,15 @@ import { Logger } from './logger';
 import { FsLogger } from './fs-logger';
 import { LoggerInitializer } from './logger-initializer';
 
-const filePath = path.join(__dirname, '../../../../storage/logs/app.log');
-const logger = FsLogger.Instance({ filePath, withMemCache: false });
-
 const LoggerFactory = {
     async Setup(scheduler: JobsScheduler): Promise<void> {
-        LoggerInitializer.Init(scheduler, logger);
+        LoggerInitializer.Init(scheduler, this.anInstance());
     },
 
     anInstance(): Logger {
+        const filePath = path.join(__dirname, '../../../../storage/logs/app.log');
+        const logger = FsLogger.Instance({ filePath, withMemCache: false });
+
         return logger;
     },
 };

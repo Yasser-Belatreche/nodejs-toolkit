@@ -10,6 +10,8 @@ class BackupScheduledJob implements ScheduledJob {
 
     @Log(GetScheduledJobLogMessage('persistence', BackupScheduledJob.name, 'generating the backup'))
     async run(): Promise<void> {
+        if (!this.persistence.shouldBackup()) return;
+
         await this.persistence.backup();
     }
 

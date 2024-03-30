@@ -1,4 +1,4 @@
-import { Persistence } from './persistence/main/persistence';
+import { RedisClient } from './persistence/main/redis-persistence';
 import { PersistenceFactory } from './persistence/main/persistence-factory';
 
 import { MessagesBroker } from './messages-broker/main/messages-broker';
@@ -24,8 +24,8 @@ const Library = {
         await PersistenceFactory.Destroy();
     },
 
-    aPersistence(): Persistence {
-        return PersistenceFactory.anInstance();
+    aRedisClient(): RedisClient {
+        return PersistenceFactory.aRedisPersistence().Client();
     },
 
     aMessagesBroker(): MessagesBroker {

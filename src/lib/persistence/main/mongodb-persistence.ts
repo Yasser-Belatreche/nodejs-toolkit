@@ -62,6 +62,10 @@ class MongodbPersistence implements Persistence {
         await this.connection.connection.db.dropDatabase();
     }
 
+    shouldBackup(): boolean {
+        return true;
+    }
+
     async backup(): Promise<void> {
         return await new Promise((resolve, reject) => {
             exec(
@@ -103,7 +107,8 @@ class MongodbPersistence implements Persistence {
                 message: 'the database has disconnected',
             };
 
-        if (this.connection.connection.readyState === 1) return { status: 'up' };
+        if (this.connection.connection.readyState === 1)
+            return { provider: 'mongodb', status: 'up' };
 
         return { provider: 'mongodb', status: 'down', message: 'the database is not connected' };
     }

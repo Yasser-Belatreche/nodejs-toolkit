@@ -1,30 +1,21 @@
-import { createClient } from 'redis';
-
 import { Cache, CacheHealth, CacheOptions } from './cache';
-
-interface Config {
-    url: string;
-}
+import { RedisClient } from '../../persistence/main/redis-persistence';
 
 class RedisCache implements Cache {
     private static _instance: RedisCache;
 
-    static Instance(config: Config): RedisCache {
+    static Instance(client: RedisClient): RedisCache {
         if (this._instance) return this._instance;
 
-        this._instance = new RedisCache(config);
+        this._instance = new RedisCache(client);
 
         return this._instance;
     }
 
-    private client: ReturnType<typeof createClient> | undefined;
-
-    private constructor(private readonly config: Config) {}
+    private constructor(private readonly client: RedisClient) {}
 
     async get<T>(key: string): Promise<T | null> {
-        await this.assertConnected();
-
-        const value = await this.client!.get(key);
+        const value = await this.client.get(key);
 
         if (!value) return null;
 
@@ -32,15 +23,11 @@ class RedisCache implements Cache {
     }
 
     async set<T>(key: string, value: T, options?: CacheOptions | undefined): Promise<void> {
-        await this.assertConnected();
-
-        await this.client!.set(key, JSON.stringify(value), { PX: options?.ttl });
+        await this.client.set(key, JSON.stringify(value), { PX: options?.ttl });
     }
 
     async setNx<T>(key: string, value: T, options?: CacheOptions | undefined): Promise<boolean> {
-        await this.assertConnected();
-
-        const result = await this.client!.set(key, JSON.stringify(value), {
+        const result = await this.client.set(key, JSON.stringify(value), {
             PX: options?.ttl,
             NX: true,
         });
@@ -49,38 +36,14 @@ class RedisCache implements Cache {
     }
 
     async invalidate(key: string): Promise<void> {
-        await this.assertConnected();
-
-        await this.client!.del(key);
+        await this.client.del(key);
     }
 
     async clear(): Promise<void> {
-        await this.assertConnected();
-
-        await this.client!.flushAll();
-        await this.client!.disconnect();
-    }
-
-    private async assertConnected(): Promise<void> {
-        if (this.client?.isOpen) return;
-
-        this.client = createClient({ url: this.config.url });
-
-        this.client.on('error', error => {
-            console.error(error);
-        });
-
-        await this.client.connect();
+        await this.client.flushAll();
     }
 
     async health(): Promise<CacheHealth> {
-        if (!this.client)
-            return {
-                provider: 'redis',
-                status: 'down',
-                message: 'the connection is not open because the cache did not get used yet',
-            };
-
         if (this.client.isOpen) return { provider: 'redis', status: 'up' };
 
         return { provider: 'redis', status: 'down', message: 'the client is disconnected' };

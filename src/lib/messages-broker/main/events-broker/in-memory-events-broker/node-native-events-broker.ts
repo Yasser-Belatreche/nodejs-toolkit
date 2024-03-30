@@ -35,6 +35,8 @@ class NodeNativeEventsBroker implements EventsBroker {
     }
 
     async registerEventHandler<T extends Event<any>>(handler: EventHandler<T>): Promise<void> {
+        if (handler.config().disabled) return;
+
         this.eventsEmitter.on(handler.eventName(), (event: T, session: SessionCorrelationId) => {
             handler.handle(event, session).catch(async e => {
                 await this.failedEventsRepository.save({
@@ -42,7 +44,7 @@ class NodeNativeEventsBroker implements EventsBroker {
                     event,
                     eventOccuredAt: event.occurredAt,
                     handlerId: handler.id(),
-                    handlerMaxRetries: handler.config?.().retries ?? 0,
+                    handlerMaxRetries: handler.config().retries ?? 0,
                     sessionCorrelationId: session.correlationId,
 
                     retries: 0,
@@ -61,6 +63,8 @@ class NodeNativeEventsBroker implements EventsBroker {
     }
 
     async registerUniversalEventHandler(handler: UniversalEventHandler): Promise<void> {
+        if (handler.config().disabled) return;
+
         this.eventsEmitter.on(
             this.UNIVERSAL_EVENT_NAME,
             (event: Event<any>, session: SessionCorrelationId) => {
@@ -70,7 +74,7 @@ class NodeNativeEventsBroker implements EventsBroker {
                         event,
                         eventOccuredAt: event.occurredAt,
                         handlerId: handler.id(),
-                        handlerMaxRetries: handler.config?.().retries ?? 0,
+                        handlerMaxRetries: handler.config().retries ?? 0,
                         sessionCorrelationId: session.correlationId,
 
                         retries: 0,
