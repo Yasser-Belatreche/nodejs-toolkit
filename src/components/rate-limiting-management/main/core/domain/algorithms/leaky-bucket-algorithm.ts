@@ -40,7 +40,7 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
                 if (!requests.length) continue;
 
                 const { userId, token } = this.reverseKey(key);
-                const remainings = this.calculateRemainings(userId, token);
+                const remaining = this.calculateRemaining(userId, token);
 
                 let passedRequests = 0;
 
@@ -52,22 +52,22 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
                     resolver({
                         perSecond: {
                             limit: limits.perSecond,
-                            remaining: remainings.perSecond + passedRequests,
+                            remaining: remaining.perSecond + passedRequests,
                             reset: new Date(Date.now() + 1000),
                         },
                         perMinute: {
                             limit: limits.perMinute,
-                            remaining: remainings.perMinute + passedRequests,
+                            remaining: remaining.perMinute + passedRequests,
                             reset: new Date(Date.now() + 1000),
                         },
                         perHour: {
                             limit: limits.perHour,
-                            remaining: remainings.perHour + passedRequests,
+                            remaining: remaining.perHour + passedRequests,
                             reset: new Date(Date.now() + 1000),
                         },
                         perDay: {
                             limit: limits.perDay,
-                            remaining: remainings.perDay + passedRequests,
+                            remaining: remaining.perDay + passedRequests,
                             reset: new Date(Date.now() + 1000),
                         },
                     });
@@ -108,27 +108,27 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
 
     async quota(userId: string, token: string, limits: UserQuotaLimits): Promise<RemainingQuota> {
         const requests = this.map.get(this.key(userId, token));
-        const remainings = this.calculateRemainings(userId, token);
+        const remaining = this.calculateRemaining(userId, token);
 
         return {
             perDay: {
                 limit: limits.perDay,
-                remaining: remainings.perDay,
+                remaining: remaining.perDay,
                 reset: requests ? new Date(Date.now() + 1000) : null,
             },
             perHour: {
                 limit: limits.perHour,
-                remaining: remainings.perHour,
+                remaining: remaining.perHour,
                 reset: requests ? new Date(Date.now() + 1000) : null,
             },
             perMinute: {
                 limit: limits.perMinute,
-                remaining: remainings.perMinute,
+                remaining: remaining.perMinute,
                 reset: requests ? new Date(Date.now() + 1000) : null,
             },
             perSecond: {
                 limit: limits.perSecond,
-                remaining: remainings.perSecond,
+                remaining: remaining.perSecond,
                 reset: requests ? new Date(Date.now() + 1000) : null,
             },
         };
@@ -139,7 +139,7 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
         clearInterval(this.interval);
     }
 
-    private calculateRemainings(
+    private calculateRemaining(
         userId: string,
         token: string,
     ): { perDay: number; perHour: number; perMinute: number; perSecond: number } {
