@@ -5,7 +5,7 @@ import { after, beforeEach, describe, it } from 'node:test';
 import { wait } from '@lib/primitives/generic/helpers/wait';
 import { PromiseState } from '@lib/primitives/generic/helpers/promise-state';
 
-import { defaultQuotaLimits } from '../main/core/domain/user-quota-limits';
+import { defaultQuotaLimits } from '../main/core/domain/quota-limits';
 
 import { LeakyBucketAlgorithm } from '../main/core/domain/algorithms/leaky-bucket-algorithm';
 

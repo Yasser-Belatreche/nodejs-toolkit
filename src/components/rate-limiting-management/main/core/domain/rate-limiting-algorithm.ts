@@ -1,23 +1,17 @@
 import { Result } from '@lib/primitives/generic/patterns/result';
 
-import { Quota } from './quota';
-import { UserQuotaLimits } from './user-quota-limits';
 import { TooManyRequestsException } from './exceptions/too-many-requests-exception';
+
+import { QuotaSummary } from './quota-summary';
+import { QuotaLimits } from './quota-limits';
 
 export interface RateLimitingAlgorithm {
     request(
         userId: string,
         token: string,
         score: number,
-        limits: UserQuotaLimits,
-    ): Promise<Result<RemainingQuota, TooManyRequestsException>>;
+        limits: QuotaLimits,
+    ): Promise<Result<QuotaSummary, TooManyRequestsException>>;
 
-    quota(userId: string, token: string, limits: UserQuotaLimits): Promise<RemainingQuota>;
-}
-
-export interface RemainingQuota {
-    perSecond: Quota;
-    perMinute: Quota;
-    perHour: Quota;
-    perDay: Quota;
+    quota(userId: string, token: string, limits: QuotaLimits): Promise<QuotaSummary>;
 }

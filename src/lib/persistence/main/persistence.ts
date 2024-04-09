@@ -1,9 +1,15 @@
+import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
+
 export interface Persistence {
     connect(): Promise<void>;
 
     disconnect(): Promise<void>;
 
-    transaction<T>(func: () => Promise<T>): Promise<T>;
+    startTransaction(session: SessionCorrelationId): Promise<void>;
+
+    commitTransaction(session: SessionCorrelationId): Promise<void>;
+
+    abortTransaction(session: SessionCorrelationId): Promise<void>;
 
     shouldBackup(): boolean;
 

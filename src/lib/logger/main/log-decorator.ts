@@ -22,6 +22,7 @@ function Log(
             if (saveParams) {
                 args.forEach((value, index) => {
                     if (value?.correlationId) correlationId = value.correlationId;
+                    if (value?.session?.correlationId) correlationId = value.session.correlationId;
 
                     paramsPayload[`param-${index + 1}`] = value;
                 });

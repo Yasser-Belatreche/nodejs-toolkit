@@ -1,4 +1,7 @@
+import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
+
 import { RedisClient } from './persistence/main/redis-persistence';
+import { MongoSession } from './persistence/main/mongodb-persistence';
 import { PersistenceFactory } from './persistence/main/persistence-factory';
 
 import { MessagesBroker } from './messages-broker/main/messages-broker';
@@ -26,6 +29,10 @@ const Library = {
 
     aRedisClient(): RedisClient {
         return PersistenceFactory.aRedisPersistence().Client();
+    },
+
+    MongoSession(session: SessionCorrelationId): MongoSession {
+        return PersistenceFactory.aMongoDbPersistence().getSession(session);
     },
 
     aMessagesBroker(): MessagesBroker {

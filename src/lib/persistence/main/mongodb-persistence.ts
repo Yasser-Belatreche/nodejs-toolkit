@@ -2,8 +2,12 @@ import fs from 'fs';
 import mongoose from 'mongoose';
 import { exec } from 'child_process';
 
+import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
+import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
+
 import { Persistence, PersistenceHealth } from './persistence';
-import { DeveloperException } from '../../primitives/application-specific/exceptions/developer-exception';
+
+export type MongoSession = mongoose.mongo.ClientSession;
 
 interface Config {
     uri: string;
@@ -12,6 +16,8 @@ interface Config {
 
 class MongodbPersistence implements Persistence {
     private connection: typeof mongoose | undefined;
+
+    private readonly sessionRequestMap = new Map<string, mongoose.mongo.ClientSession>();
 
     private static _instance: MongodbPersistence;
 
@@ -40,19 +46,43 @@ class MongodbPersistence implements Persistence {
         await this.connection.disconnect();
     }
 
-    async transaction<T>(func: () => Promise<T>): Promise<T> {
+    async startTransaction(session: SessionCorrelationId): Promise<void> {
         if (!this.connection)
             throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
 
-        const session = await this.connection.startSession();
+        const clientSession = this.getSession(session);
 
-        let result: T;
+        clientSession.startTransaction();
+    }
 
-        await session.withTransaction(async () => {
-            result = await func();
-        });
+    async abortTransaction(session: SessionCorrelationId): Promise<void> {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
 
-        return result!;
+        const clientSession = this.getSession(session);
+
+        if (!clientSession.inTransaction())
+            throw new DeveloperException(
+                'TRANSACTION_NOT_STARTED',
+                'the transaction is not started',
+            );
+
+        await clientSession.abortTransaction();
+    }
+
+    async commitTransaction(session: SessionCorrelationId): Promise<void> {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
+
+        const clientSession = this.getSession(session);
+
+        if (!clientSession.inTransaction())
+            throw new DeveloperException(
+                'TRANSACTION_NOT_STARTED',
+                'the transaction is not started',
+            );
+
+        await clientSession.commitTransaction();
     }
 
     async clear(): Promise<void> {
@@ -111,6 +141,50 @@ class MongodbPersistence implements Persistence {
             return { provider: 'mongodb', status: 'up' };
 
         return { provider: 'mongodb', status: 'down', message: 'the database is not connected' };
+    }
+
+    async startSession(session: SessionCorrelationId): Promise<void> {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
+
+        const clientSession = await this.connection.startSession();
+
+        this.sessionRequestMap.set(session.correlationId, clientSession);
+    }
+
+    async endSession(session: SessionCorrelationId): Promise<void> {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
+
+        const clientSession = this.sessionRequestMap.get(session.correlationId);
+
+        if (!clientSession)
+            throw new DeveloperException(
+                'SESSION_NOT_FOUND',
+                'the session is not found, should start it first',
+            );
+
+        await clientSession.endSession();
+        this.sessionRequestMap.delete(session.correlationId);
+    }
+
+    getSession(session: SessionCorrelationId): MongoSession {
+        if (!this.connection)
+            throw new DeveloperException('DB_NOT_CONNECTED', 'the database is not connected');
+
+        if (!this.sessionStarted(session))
+            throw new DeveloperException(
+                'SESSION_NOT_STARTED',
+                'the session is not started, should start it first',
+            );
+
+        const clientSession = this.sessionRequestMap.get(session.correlationId);
+
+        return clientSession!;
+    }
+
+    sessionStarted(session: SessionCorrelationId): boolean {
+        return this.sessionRequestMap.has(session.correlationId);
     }
 }
 

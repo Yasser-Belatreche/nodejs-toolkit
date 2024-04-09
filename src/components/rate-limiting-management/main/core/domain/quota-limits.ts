@@ -1,14 +1,11 @@
-export interface UserQuotaLimits {
-    userId: string;
-
+export interface QuotaLimits {
     perSecond: number;
     perMinute: number;
     perHour: number;
     perDay: number;
 }
 
-const defaultQuotaLimits: UserQuotaLimits = {
-    userId: 'DEFAULT',
+const defaultQuotaLimits: QuotaLimits = {
     perSecond: 5,
     perMinute: 60,
     perHour: 600,

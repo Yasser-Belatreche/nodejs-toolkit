@@ -9,6 +9,7 @@
     "lint": "npx eslint . --ext .ts",
     "test:rate-limiting": "node --env-file .env.test --test --import tsx src/components/rate-limiting-management/tests/*.test.ts",
     "test:webhooks": "node --env-file .env.test --test --import tsx src/components/webhooks-management/tests/*.test.ts",
+    "test:auth": "node --env-file .env.test --test --import tsx src/components/auth-management/tests/*.test.ts",
     "test:lib:cache": "node --env-file .env.test --test --import tsx src/lib/cache/tests/*.test.ts",
     "test:lib:scheduler": "node --env-file .env.test --test --import tsx src/lib/jobs-scheduler/tests/*.test.ts",
     "test:lib:broker": "node --env-file .env.test --test --import tsx src/lib/messages-broker/tests/*.test.ts",

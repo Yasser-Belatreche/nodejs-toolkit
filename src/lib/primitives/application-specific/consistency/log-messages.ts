@@ -17,7 +17,7 @@ const GetQuestionAnsweringLogMessage = (
 };
 
 const GetComponentActionLogMessage = (component: string, action: string): string => {
-    return Capitalize(`${component}: ${action}`, { toLower: true });
+    return Capitalize(`${component}: ${action}`);
 };
 
 export {

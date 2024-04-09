@@ -1,11 +1,13 @@
 import { Result } from '@lib/primitives/generic/patterns/result';
 import { RedisClient } from '@lib/persistence/main/redis-persistence';
+import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
 import { TooManyRequestsException } from '../exceptions/too-many-requests-exception';
 
-import { UserQuotaLimits } from '../user-quota-limits';
-import { RateLimitingAlgorithm, RemainingQuota } from '../rate-limiting-algorithm';
-import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
+import { QuotaSummary } from '../quota-summary';
+import { QuotaLimits } from '../quota-limits';
+
+import { RateLimitingAlgorithm } from '../rate-limiting-algorithm';
 
 interface Config {
     capacity: number;
@@ -34,8 +36,8 @@ class TokenBucketAlgorithm implements RateLimitingAlgorithm {
         userId: string,
         token: string,
         score: number,
-        limits: UserQuotaLimits,
-    ): Promise<Result<RemainingQuota, TooManyRequestsException>> {
+        limits: QuotaLimits,
+    ): Promise<Result<QuotaSummary, TooManyRequestsException>> {
         const key = this.key(userId, token);
 
         const consumed = await this.client.incrBy(key, score);
@@ -72,7 +74,7 @@ class TokenBucketAlgorithm implements RateLimitingAlgorithm {
         });
     }
 
-    async quota(userId: string, token: string, limits: UserQuotaLimits): Promise<RemainingQuota> {
+    async quota(userId: string, token: string, limits: QuotaLimits): Promise<QuotaSummary> {
         const remaining = await this.calculateRemaining(userId, token);
 
         return {
@@ -104,7 +106,7 @@ class TokenBucketAlgorithm implements RateLimitingAlgorithm {
     }
 
     private key(userId: string, token: string): string {
-        return `rate-limiting:${userId}:${token}`;
+        return `rate-limiting:token-bucket:${userId}:${token}`;
     }
 
     private async calculateRemaining(
@@ -144,7 +146,7 @@ class TokenBucketAlgorithm implements RateLimitingAlgorithm {
 
     private async resetRates(): Promise<void> {
         const luaScript = `
-            local keys = redis.call('KEYS', 'rate-limiting:*')
+            local keys = redis.call('KEYS', 'rate-limiting:token-bucket:*')
             local fillRate = tonumber(ARGV[1])
             
             for i, key in ipairs(keys) do

@@ -40,9 +40,11 @@ class RedisPersistence implements Persistence {
         await this.client.disconnect();
     }
 
-    async transaction<T>(func: () => Promise<T>): Promise<T> {
-        return await func();
-    }
+    async startTransaction(): Promise<void> {}
+
+    async commitTransaction(): Promise<void> {}
+
+    async abortTransaction(): Promise<void> {}
 
     shouldBackup(): boolean {
         return false;

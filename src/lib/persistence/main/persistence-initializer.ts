@@ -1,4 +1,4 @@
-import { JobsScheduler } from '../../jobs-scheduler/main/jobs-scheduler';
+import { JobsScheduler } from '@lib/jobs-scheduler/main/jobs-scheduler';
 
 import { Persistence } from './persistence';
 import { BackupScheduledJob } from './scheduled-jobs/backup-scheduled-job';

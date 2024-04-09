@@ -1,17 +1,19 @@
 import { Result } from '@lib/primitives/generic/patterns/result';
 import { DeveloperException } from '@lib/primitives/application-specific/exceptions/developer-exception';
 
-import { UserQuotaLimits } from '../user-quota-limits';
-import { RateLimitingAlgorithm, RemainingQuota } from '../rate-limiting-algorithm';
+import { QuotaSummary } from '../quota-summary';
+import { QuotaLimits } from '../quota-limits';
 
 import { TooManyRequestsException } from '../exceptions/too-many-requests-exception';
+
+import { RateLimitingAlgorithm } from '../rate-limiting-algorithm';
 
 interface Config {
     capacity: number;
     leaksPerSecond: number;
 }
 
-type PromiseResolver = (remaining: RemainingQuota) => void;
+type PromiseResolver = (remaining: QuotaSummary) => void;
 
 class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
     private static _instance: LeakyBucketAlgorithm;
@@ -25,7 +27,7 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
     private readonly interval: NodeJS.Timeout;
     private readonly map = new Map<
         string,
-        Array<{ limits: UserQuotaLimits; resolver: PromiseResolver }>
+        Array<{ limits: QuotaLimits; resolver: PromiseResolver }>
     >();
 
     private constructor(private readonly config: Config) {
@@ -86,8 +88,8 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
         userId: string,
         token: string,
         score: number,
-        limits: UserQuotaLimits,
-    ): Promise<Result<RemainingQuota, TooManyRequestsException>> {
+        limits: QuotaLimits,
+    ): Promise<Result<QuotaSummary, TooManyRequestsException>> {
         const key = this.key(userId, token);
 
         if (!this.map.has(key)) this.map.set(key, []);
@@ -97,8 +99,8 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
 
         let resolver: PromiseResolver;
 
-        const promise = new Promise<RemainingQuota>(resolve => {
-            resolver = (remaining: RemainingQuota) => resolve(remaining);
+        const promise = new Promise<QuotaSummary>(resolve => {
+            resolver = (remaining: QuotaSummary) => resolve(remaining);
         });
 
         this.map.get(key)!.push({ limits, resolver: resolver! });
@@ -106,7 +108,7 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
         return Result.Ok(await promise);
     }
 
-    async quota(userId: string, token: string, limits: UserQuotaLimits): Promise<RemainingQuota> {
+    async quota(userId: string, token: string, limits: QuotaLimits): Promise<QuotaSummary> {
         const requests = this.map.get(this.key(userId, token));
         const remaining = this.calculateRemaining(userId, token);
 

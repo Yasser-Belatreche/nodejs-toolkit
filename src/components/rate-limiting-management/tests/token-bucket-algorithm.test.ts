@@ -6,7 +6,7 @@ import { Library } from '@lib/library';
 import { wait } from '@lib/primitives/generic/helpers/wait';
 import { PersistenceFactory } from '@lib/persistence/main/persistence-factory';
 
-import { defaultQuotaLimits } from '../main/core/domain/user-quota-limits';
+import { defaultQuotaLimits } from '../main/core/domain/quota-limits';
 import { TokenBucketAlgorithm } from '../main/core/domain/algorithms/token-bucket-algorithm';
 
 await describe('Token Bucket Algorithm', async () => {
