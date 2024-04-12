@@ -7,16 +7,29 @@ import { FileCompressorComposite } from './infra/file-compressor/file-compressor
 
 import { CloudinaryClient } from '@lib/cloud/cloudinary/cloudinary';
 import { MessagesBroker } from '@lib/messages-broker/main/messages-broker';
+import { MediaManagerInitializer } from './media-manager-initializer';
 
-const MediaManagerFactory = {
-    async Setup(broker: MessagesBroker): Promise<void> {},
+let instance: MediaManager;
 
-    anInstance(cloudinaryClient: CloudinaryClient): MediaManager {
-        return new MediaManagerFacade(
+const getInstance = (cloudinaryClient: CloudinaryClient): MediaManager => {
+    if (!instance) {
+        instance = new MediaManagerFacade(
             new CloudinaryCloudProvider(cloudinaryClient),
             new FileCompressorComposite([]),
             new InMemoryMediaAssetRepository(),
         );
+    }
+
+    return instance;
+};
+
+const MediaManagerFactory = {
+    async Setup(broker: MessagesBroker, cloudinaryClient: CloudinaryClient): Promise<void> {
+        MediaManagerInitializer.Init(broker, getInstance(cloudinaryClient));
+    },
+
+    anInstance(cloudinaryClient: CloudinaryClient): MediaManager {
+        return getInstance(cloudinaryClient);
     },
 };
 

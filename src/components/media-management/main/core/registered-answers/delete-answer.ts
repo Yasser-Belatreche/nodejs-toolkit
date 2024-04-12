@@ -1,4 +1,8 @@
-import { Answer } from '@lib/messages-broker/main/sync-messages-broker/sync-messages-broker';
+import {
+    Answer,
+    RegisteredAnswers,
+} from '@lib/messages-broker/main/sync-messages-broker/sync-messages-broker';
+import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 
 import { MediaManager } from '../../media-manager';
 
@@ -9,8 +13,14 @@ class DeleteAnswer implements Answer<'Media.Delete'> {
         return 'Media.Delete';
     }
 
-    async answer(params: { id: string }): Promise<{ id: string }> {
-        await this.manager.delete(params.id);
+    async answer(
+        params: RegisteredAnswers['Media.Delete']['takes'],
+        session: SessionCorrelationId,
+    ): Promise<RegisteredAnswers['Media.Delete']['returns']> {
+        await this.manager.delete({
+            id: params.id,
+            session: session as any,
+        });
 
         return { id: params.id };
     }
