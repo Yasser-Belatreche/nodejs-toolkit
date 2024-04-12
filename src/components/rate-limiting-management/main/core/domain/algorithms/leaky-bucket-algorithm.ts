@@ -31,57 +31,19 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
     >();
 
     private constructor(private readonly config: Config) {
+        if (config.capacity < 1)
+            throw new DeveloperException(
+                'INVALID_CONFIGURATION',
+                'The capacity must be greater than 0',
+            );
+
         if (config.leaksPerSecond < 1)
             throw new DeveloperException(
                 'INVALID_CONFIGURATION',
                 'The leaks per second must be greater than 0',
             );
 
-        const handler = (): void => {
-            for (const [key, requests] of this.map) {
-                if (!requests.length) continue;
-
-                const { userId, token } = this.reverseKey(key);
-                const remaining = this.calculateRemaining(userId, token);
-
-                let passedRequests = 0;
-
-                for (const { resolver, limits } of requests) {
-                    if (passedRequests >= this.config.leaksPerSecond) break;
-
-                    passedRequests++;
-
-                    resolver({
-                        perSecond: {
-                            limit: limits.perSecond,
-                            remaining: remaining.perSecond + passedRequests,
-                            reset: new Date(Date.now() + 1000),
-                        },
-                        perMinute: {
-                            limit: limits.perMinute,
-                            remaining: remaining.perMinute + passedRequests,
-                            reset: new Date(Date.now() + 1000),
-                        },
-                        perHour: {
-                            limit: limits.perHour,
-                            remaining: remaining.perHour + passedRequests,
-                            reset: new Date(Date.now() + 1000),
-                        },
-                        perDay: {
-                            limit: limits.perDay,
-                            remaining: remaining.perDay + passedRequests,
-                            reset: new Date(Date.now() + 1000),
-                        },
-                    });
-                }
-
-                this.map.set(key, requests.slice(passedRequests));
-            }
-        };
-
-        this.interval = setInterval(() => {
-            handler();
-        }, 1000);
+        this.interval = this.setup();
     }
 
     async request(
@@ -178,6 +140,54 @@ class LeakyBucketAlgorithm implements RateLimitingAlgorithm {
         const [userId, token] = key.split(':');
 
         return { userId, token };
+    }
+
+    private setup(): NodeJS.Timeout {
+        const handler = (): void => {
+            for (const [key, requests] of this.map) {
+                if (!requests.length) continue;
+
+                const { userId, token } = this.reverseKey(key);
+                const remaining = this.calculateRemaining(userId, token);
+
+                let passedRequests = 0;
+
+                for (const { resolver, limits } of requests) {
+                    if (passedRequests >= this.config.leaksPerSecond) break;
+
+                    passedRequests++;
+
+                    resolver({
+                        perSecond: {
+                            limit: limits.perSecond,
+                            remaining: remaining.perSecond + passedRequests,
+                            reset: new Date(Date.now() + 1000),
+                        },
+                        perMinute: {
+                            limit: limits.perMinute,
+                            remaining: remaining.perMinute + passedRequests,
+                            reset: new Date(Date.now() + 1000),
+                        },
+                        perHour: {
+                            limit: limits.perHour,
+                            remaining: remaining.perHour + passedRequests,
+                            reset: new Date(Date.now() + 1000),
+                        },
+                        perDay: {
+                            limit: limits.perDay,
+                            remaining: remaining.perDay + passedRequests,
+                            reset: new Date(Date.now() + 1000),
+                        },
+                    });
+                }
+
+                this.map.set(key, requests.slice(passedRequests));
+            }
+        };
+
+        return setInterval(() => {
+            handler();
+        }, 1000);
     }
 }
 

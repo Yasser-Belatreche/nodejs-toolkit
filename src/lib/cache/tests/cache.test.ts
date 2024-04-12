@@ -11,7 +11,7 @@ import { Cache } from '../main/cache';
 import { RedisCache } from '../main/redis-cache';
 import { InMemoryCache } from '../main/in-memory-cache';
 
-await describe('cache test', async () => {
+await describe('cache', async () => {
     const providers: Cache[] = [
         InMemoryCache.Instance(),
         RedisCache.Instance(Library.aRedisClient()),

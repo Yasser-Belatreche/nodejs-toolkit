@@ -1,5 +1,7 @@
 import { SessionCorrelationId } from '@lib/primitives/application-specific/session';
 
+import { MediaRegisteredAnswers } from '../../../../components/media-management/main/core/registered-answers/registered-answers';
+
 export interface SyncMessagesBroker {
     ask<Q extends keyof RegisteredAnswers>(
         question: Q,
@@ -21,7 +23,7 @@ export interface Answer<Q extends keyof RegisteredAnswers> {
     ): Promise<RegisteredAnswers[Q]['returns']>;
 }
 
-export type RegisteredAnswers = TestsRegisteredAnswer;
+export type RegisteredAnswers = TestsRegisteredAnswer & MediaRegisteredAnswers;
 
 interface TestsRegisteredAnswer {
     'Tests.First': {

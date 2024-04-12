@@ -16,6 +16,12 @@ import { LoggerFactory } from './logger/main/logger-factory';
 import { Cache } from './cache/main/cache';
 import { CacheFactory } from './cache/main/cache-factory';
 
+import { S3Client } from './cloud/aws/aws';
+import { AwsFactory } from './cloud/aws/aws-factory';
+
+import { CloudinaryClient } from './cloud/cloudinary/cloudinary';
+import { CloudinaryFactory } from './cloud/cloudinary/cloudinary-factory';
+
 const Library = {
     async Init(): Promise<void> {
         await LoggerFactory.Setup(this.aJobsScheduler());
@@ -49,6 +55,14 @@ const Library = {
 
     aCache(): Cache {
         return CacheFactory.anInstance();
+    },
+
+    anAwsS3Client(): S3Client {
+        return AwsFactory.anInstance().S3Client();
+    },
+
+    aCloudinaryClient(): CloudinaryClient {
+        return CloudinaryFactory.anInstance().Client();
     },
 };
 
