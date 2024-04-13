@@ -12,6 +12,7 @@ export interface ScheduledJob {
 
     rhythm(): Rhythm;
 
+    // default 2 retries
     config?(): { readonly retry: number };
 }
 

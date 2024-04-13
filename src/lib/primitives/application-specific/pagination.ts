@@ -1,4 +1,4 @@
-import { PaginatedQuery } from './base-query';
+import { PaginatedQuery } from './query';
 import { BaseValidationException } from './exceptions/base-validation-exception';
 
 export interface Pagination {

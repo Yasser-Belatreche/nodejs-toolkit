@@ -4,6 +4,7 @@ import { GetWebhookQuery } from '../../main/core/usecases/get-webhook/get-webhoo
 const aGetWebhookQuery = (overr?: Partial<GetWebhookQuery>): GetWebhookQuery => {
     return {
         id: faker.string.uuid(),
+        session: { correlationId: faker.string.uuid(), user: { id: faker.string.uuid() } } as any,
         ...overr,
     };
 };

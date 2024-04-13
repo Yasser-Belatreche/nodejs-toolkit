@@ -4,6 +4,7 @@ import { DisableWebhookCommand } from '../../main/core/usecases/disable-webhook/
 const aDisableWebhookCommand = (overr?: Partial<DisableWebhookCommand>): DisableWebhookCommand => {
     return {
         id: faker.string.uuid(),
+        session: { correlationId: faker.string.uuid(), user: { id: faker.string.uuid() } } as any,
         ...overr,
     };
 };

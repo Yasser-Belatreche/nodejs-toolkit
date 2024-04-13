@@ -1,8 +1,8 @@
 import { Permissions } from '@lib/primitives/application-specific/permissions';
 
-export const WebhooksManagerPermissions = {
+export const WebhooksPermissions = {
     CreateWebhook: 'webhooks/write/create',
-    EditBulkWebhooks: 'webhooks/write/edit',
+    EditWebhook: 'webhooks/write/edit',
     DeleteWebhook: 'webhooks/write/delete',
     EnableWebhook: 'webhooks/write/enable',
     DisableWebhook: 'webhooks/write/disable',

@@ -16,7 +16,7 @@ class CreateWebhookCommandHandler
             command.assigneeId,
             command.deliveryUrl,
             command.events,
-            command.createdBy,
+            command.session.user.id,
         );
 
         await this.repository.create(webhook);

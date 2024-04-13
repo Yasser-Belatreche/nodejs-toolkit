@@ -1,4 +1,4 @@
-import { PaginatedListQueryResponse } from '@lib/primitives/application-specific/base-query';
+import { PaginatedListQueryResponse } from '@lib/primitives/application-specific/query';
 
 import { OutboxEvent } from '../../domain/outbox-event';
 

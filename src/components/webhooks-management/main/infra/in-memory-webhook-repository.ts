@@ -1,6 +1,6 @@
-import { EventName } from '../../core/domain/event-name';
-import { Webhook } from '../../core/domain/webhook';
-import { WebhookRepository } from '../../core/domain/webhook-repository';
+import { EventName } from '../core/domain/event-name';
+import { Webhook } from '../core/domain/webhook';
+import { WebhookRepository } from '../core/domain/webhook-repository';
 
 class InMemoryWebhookRepository implements WebhookRepository {
     private readonly map = new Map<string, Webhook>();

@@ -1,5 +1,5 @@
-import { CanRetryOutboxEvent, OutboxEvent } from '../../core/domain/outbox-event';
-import { OutboxEventRepository } from '../../core/domain/outbox-event-repository';
+import { CanRetryOutboxEvent, OutboxEvent } from '../core/domain/outbox-event';
+import { OutboxEventRepository } from '../core/domain/outbox-event-repository';
 
 class InMemoryOutboxEventRepository implements OutboxEventRepository {
     private readonly map = new Map<string, OutboxEvent>();

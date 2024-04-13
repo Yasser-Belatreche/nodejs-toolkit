@@ -6,7 +6,7 @@ const aCreateWebhookCommand = (overr?: Partial<CreateWebhookCommand>): CreateWeb
     assigneeId: faker.string.uuid(),
     deliveryUrl: faker.internet.url(),
     events: [],
-    createdBy: faker.string.uuid(),
+    session: { correlationId: faker.string.uuid(), user: { id: faker.string.uuid() } } as any,
 
     ...overr,
 });

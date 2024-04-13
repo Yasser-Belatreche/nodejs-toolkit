@@ -6,6 +6,7 @@ const anEditWebhookCommand = (overr?: Partial<EditWebhookCommand>): EditWebhookC
     id: faker.string.uuid(),
     deliveryUrl: faker.internet.url(),
     events: [],
+    session: { correlationId: faker.string.uuid(), user: { id: faker.string.uuid() } } as any,
 
     ...overr,
 });

@@ -1,6 +1,6 @@
-import { PaginatedQuery } from '@lib/primitives/application-specific/base-query';
+import { ProtectedPaginatedQuery } from '@lib/primitives/application-specific/query';
 
-export interface GetOutboxEventsQuery extends PaginatedQuery {
+export interface GetOutboxEventsQuery extends ProtectedPaginatedQuery {
     id?: string[];
     webhook?: string[];
     assigneeId?: string[];

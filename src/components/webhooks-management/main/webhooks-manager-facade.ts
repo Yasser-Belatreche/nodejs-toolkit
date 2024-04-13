@@ -1,3 +1,5 @@
+import { WebhooksManager } from './webhooks-manager';
+
 import { RestClient } from './core/domain/rest-client';
 import { WebhookRepository } from './core/domain/webhook-repository';
 import { OutboxEventRepository } from './core/domain/outbox-event-repository';
@@ -35,18 +37,18 @@ import { TestWebhookCommandHandler } from './core/usecases/test-webhook/test-web
 import { TestWebhookCommandResponse } from './core/usecases/test-webhook/test-webhook-command-response';
 
 import { GetWebhooksQuery } from './core/usecases/get-webhooks/get-webhooks-query';
-import { GetWebhooksQueryResponse } from './core/usecases/get-webhooks/get-webhooks-query-response';
 import { GetWebhooksQueryHandler } from './core/usecases/get-webhooks/get-webhooks-query-handler';
+import { GetWebhooksQueryResponse } from './core/usecases/get-webhooks/get-webhooks-query-response';
 
-import { GetOutboxEventQueryResponse } from './core/usecases/get-outbox-event/get-outbox-event-query-response';
-import { GetOutboxEventQueryHandler } from './core/usecases/get-outbox-event/get-outbox-event-query-handler';
 import { GetOutboxEventsQuery } from './core/usecases/get-outbox-events/get-outbox-events-query';
+import { GetOutboxEventQueryHandler } from './core/usecases/get-outbox-event/get-outbox-event-query-handler';
+import { GetOutboxEventQueryResponse } from './core/usecases/get-outbox-event/get-outbox-event-query-response';
 
 import { GetOutboxEventQuery } from './core/usecases/get-outbox-event/get-outbox-event-query';
-import { GetOutboxEventsQueryResponse } from './core/usecases/get-outbox-events/get-outbox-events-query-response';
 import { GetOutboxEventsQueryHandler } from './core/usecases/get-outbox-events/get-outbox-events-query-handler';
+import { GetOutboxEventsQueryResponse } from './core/usecases/get-outbox-events/get-outbox-events-query-response';
 
-class WebhooksManagerFacade {
+class WebhooksManagerFacade implements WebhooksManager {
     constructor(
         private readonly restClient: RestClient,
         private readonly webhookRepository: WebhookRepository,
