@@ -12,15 +12,7 @@ class CloudinaryCloudProvider implements CloudProvider {
     async upload(
         file: LocalFile,
         options: { folder: string },
-    ): Promise<
-        Result<
-            {
-                url: string;
-                idInCloud: string;
-            },
-            CannotUploadFileException
-        >
-    > {
+    ): Promise<Result<{ url: string; idInCloud: string }, CannotUploadFileException>> {
         try {
             const { secure_url: url, public_id: idInCloud } = await this.client.uploader.upload(
                 file.path,

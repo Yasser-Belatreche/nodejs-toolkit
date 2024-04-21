@@ -16,15 +16,7 @@ class AwsS3CloudProvider implements CloudProvider {
     async upload(
         file: LocalFile,
         options: { folder: string },
-    ): Promise<
-        Result<
-            {
-                url: string;
-                idInCloud: string;
-            },
-            CannotUploadFileException
-        >
-    > {
+    ): Promise<Result<{ url: string; idInCloud: string }, CannotUploadFileException>> {
         try {
             const fileStream = fs.createReadStream(file.path);
 
